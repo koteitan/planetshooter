@@ -33,9 +33,10 @@ boolean keypressed[KEYS];
 Arduboy arduboy;
 AbPrinter text(arduboy);
 
-#define BGSTARS 30 // number of background stars
+#define BGSTARS      10 // number of background stars
+#define BGSTARLAYERS  3 // number of background star layers
 int frame_rate  = 60;  // frames/sec
-float q_bgstar[2][BGSTARS]; // position of bg stars
+float q_bgstar[2][BGSTARS][BGSTARLAYERS]; // position of bg stars
 float q_player[2]; //position of player
 float v_player[2]; //velosity of player
 
@@ -86,12 +87,15 @@ void loopGame(){
   // draw clear------------
   arduboy.clear();
   // draw stars------------
-  for(int s=0;s<BGSTARS;s++){
-    int sy = (int)((q_bgstar[1][s]-q_player[1]-WY0+BY)*WY2SY)%SY;
-    int sx = (int)((q_bgstar[0][s]-q_player[0]-WX0+BX)*WX2SX)%SX;
-    int iy = sy / 8;
-    int by = sy % 8;
-    vram[iy*WIDTH + sx] |= 1<<by;
+  float layerscale[3]={1.0f, 0.5f, 0.25f};
+  for(int l=0;l<BGSTARLAYERS;l++){
+    for(int s=0;s<BGSTARS;s++){
+      int sy = (int)((q_bgstar[1][s][l]-q_player[1]*layerscale[l]-WY0+BY)*WY2SY)%SY;
+      int sx = (int)((q_bgstar[0][s][l]-q_player[0]*layerscale[l]-WX0+BX)*WX2SX)%SX;
+      int iy = sy / 8;
+      int by = sy % 8;
+      vram[iy*WIDTH + sx] |= 1<<by;
+    }
   }
   // draw player---------
   float cosm = cos((180.0f-60.0f)/180.0f*PI);
@@ -130,9 +134,11 @@ String ralign(int i, int n){
 
 
 void resetGame(){
-for(int s=0;s<BGSTARS;s++){
-  q_bgstar[0][s] = (float)random(0,SX-1)/(float)SX*WX+WX0;
-  q_bgstar[1][s] = (float)random(0,SY-1)/(float)SY*WY+WY0;
+for(int l=0;l<BGSTARLAYERS;l++){
+  for(int s=0;s<BGSTARS;s++){
+    q_bgstar[0][s][l] = (float)random(0,SX-1)/(float)SX*WX+WX0;
+    q_bgstar[1][s][l] = (float)random(0,SY-1)/(float)SY*WY+WY0;
+  }
 }
   q_player[0] = 0.0f;
   q_player[1] = 0.0f;
