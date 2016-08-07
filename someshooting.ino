@@ -10,10 +10,10 @@
 #define WY1 (+1.0f)
 #define WX  (WX1-WX0)
 #define WY  (WY1-WY0)
-#define BX0 (-10.0f)
-#define BX1 (+10.0f)
-#define BY0 (-10.0f)
-#define BY1 (+10.0f)
+#define BX0 (-100.0f)
+#define BX1 (+100.0f)
+#define BY0 (-100.0f)
+#define BY1 (+100.0f)
 #define BX  (BX1-BX0)
 #define BY  (BY1-BY0)
 #define WY2SY ((float)SY/WY)
@@ -37,7 +37,7 @@ AbPrinter text(arduboy);
 int frame_rate  = 60;  // frames/sec
 float q_bgstar[2][BGSTARS]; // position of bg stars
 float q_player[2]; //position of player
-float v_player[2]; //verosity of player
+float v_player[2]; //velosity of player
 
 void setup(){
   arduboy.begin();
@@ -66,8 +66,8 @@ void loop(){
   for(int k=0;k<KEYS;k++) keypressed[k]=0; //clear key
 }
 void loopGame(){
-  float vstep  = 0.005f;
-  float vdecay = 0.98;
+  float vstep  = 0.01f;
+  float vdecay = 0.95;
   float vmax   = +2;
   float vmin   = -2;
   if(keypressed[KEY_XM]){v_player[0]+= -vstep;}
@@ -78,8 +78,14 @@ void loopGame(){
   v_player[1]=max(vmin,min(vmax,v_player[1]))*vdecay;
   q_player[0]=max(BX0,min(BX1,q_player[0]+v_player[0]));
   q_player[1]=max(BY0,min(BY1,q_player[1]+v_player[1]));
+  float dx,dy,ivr;
+  ivr=1.0f/sqrt(v_player[0]*v_player[0]+v_player[1]*v_player[1]);
+  dx=v_player[0]*ivr;
+  dy=v_player[1]*ivr;
   
+  // draw clear------------
   arduboy.clear();
+  // draw stars------------
   for(int s=0;s<BGSTARS;s++){
     int sy = (int)((q_bgstar[1][s]-q_player[1]-WY0+BY)*WY2SY)%SY;
     int sx = (int)((q_bgstar[0][s]-q_player[0]-WX0+BX)*WX2SX)%SX;
@@ -87,6 +93,21 @@ void loopGame(){
     int by = sy % 8;
     vram[iy*WIDTH + sx] |= 1<<by;
   }
+  // draw player---------
+  float cosm = cos((180.0f-60.0f)/180.0f*PI);
+  float cosp = cos((180.0f+60.0f)/180.0f*PI);
+  float sinm = sin((180.0f-60.0f)/180.0f*PI);
+  float sinp = sin((180.0f+60.0f)/180.0f*PI);
+  int x0=SX/2;
+  int y0=SY/2;
+  int x1=SX/2+(int)(dx*5.0f);
+  int y1=SY/2+(int)(dy*5.0f);
+  int x2=SX/2+(int)((cosm*dx-sinm*dy)*5.0f);
+  int y2=SY/2+(int)((sinm*dx+cosm*dy)*5.0f);
+  int x3=SX/2+(int)((cosp*dx-sinp*dy)*5.0f);
+  int y3=SY/2+(int)((sinp*dx+cosp*dy)*5.0f);
+  arduboy.fillTriangle(x0,y0,x1,y1,x2,y2,WHITE);
+  arduboy.fillTriangle(x0,y0,x1,y1,x3,y3,WHITE);
   arduboy.display();
 }
 
