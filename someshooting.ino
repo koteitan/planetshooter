@@ -30,27 +30,40 @@ unsigned char *vram; // =arduboy.getBuffer()
 #define KEY_A  5
 #define KEYS   6
 int curkeys = 0;
-int button[KEYS]={ LEFT_BUTTON, RIGHT_BUTTON, UP_BUTTON, DOWN_BUTTON, B_BUTTON, A_BUTTON};
+int button[KEYS]={ LEFT_BUTTON, RIGHT_BUTTON, UP_BUTTON, DOWN_BUTTON, A_BUTTON, B_BUTTON};
 boolean keypressed[KEYS];
 Arduboy arduboy;
 AbPrinter text(arduboy);
 
-#define BGSTARS      10 // number of background stars
-#define BGSTARLAYERS  3 // number of background star layers
-#define ENEMIES       6 // number of enemies
-#define BULLETS      10 // max number of bullets 
+#define BGSTARS      (10) // number of background stars
+#define BGSTARLAYERS ( 3) // number of background star layers
+#define ENEMIES      ( 1) // number of enemies
+#define BULLETS      (10) // max number of bullets 
+#define PLAYER_SIZE_DR (5) // displayed radius of player [px]
+#define PLAYER_SIZE_CR (2) // collision radius of player [px]
+#define ENEMY_SIZE_DR  (5) // displayed radius of enemy [px]
+#define ENEMY_SIZE_CR  (5) // collision radius of enemy [px]
+#define BULLET_SIZE_DR (2) // displayed radius of bullet [px]
+#define BULLET_SIZE_CR (2) // collision radius of bullet [px]
 int bullets = 0;        //     number of bullets now
 int frame_rate  = 60;  // frames/sec
 float q_bgstar[2][BGSTARS][BGSTARLAYERS]; // position of bg stars
-float q_player[2]; //position of player
-float v_player[2]; //velosity of player
-float q_enemy[ENEMIES][2];
-float v_enemy[ENEMIES][2];
-char dd_enemy[ENEMIES];
-char dt_enemy[ENEMIES];
-bool b_bullet[BULLETS];
-float q_bullet[BULLETS][2];
-float v_bullet[BULLETS][2];
+float q_player[2];          //position of player
+float v_player[2];          //velosity of player
+char h_player;             // hitpoint of player
+float q_enemy[ENEMIES][2];  // position of enemy e
+float v_enemy[ENEMIES][2];  // velosity of enemy e
+char dd_enemy[ENEMIES]; // direction of enemy e
+char dt_enemy[ENEMIES]; // direction left time of enemy e
+char h_enemy[ENEMIES]; // hitpoint of enemy e 
+char hi_enemy;         // hitpoint displayed enemy index
+char ht_enemy;         // hitpoint displayed time
+bool b_bullet[BULLETS]; // is bullet shot
+float q_bullet[BULLETS][2]; // position of bullet b
+float v_bullet[BULLETS][2]; // velosity of bullet b
+char  t_shot=0;  // shot left time
+char  p_shot=0;  // shot pattern
+float d_shot[2]; // shot direction
 void setup(){
   arduboy.begin();
   arduboy.initRandomSeed();
@@ -97,6 +110,7 @@ void movePlayer(){
 }
 
 void respawnEnemy(int e){
+  h_enemy[e]=32;
   int r=random(0,4);
   switch(r){
     case 0:
@@ -124,34 +138,40 @@ void respawnEnemy(int e){
 void moveEnemies(){
     //enemy motion -----------------
   for(int e=0;e<ENEMIES;e++){
-    float vstep  = 0.0025f;
+    float vstep  = 0.0000f;
     float vdecay = 0.9f;
     float vmax   = +10;
     float vmin   = -10;
     float dx = q_player[0]-q_enemy[e][0];
     float dy = q_player[1]-q_enemy[e][1];
-    float ivr = 1.0f/sqrt(dx*dx+dy*dy);
+    float dr   = sqrt(dx*dx+dy*dy);
+    float idr  = 1.0f/dr;
     if(abs(dx)>WX*1.1||abs(dy)>WY*1.1){
       respawnEnemy(e);
     }else{
+      // collision to player ----------
+      if(dr<SX2WX*(PLAYER_SIZE_CR+ENEMY_SIZE_CR)){
+        h_player--;
+        if(h_player==0) resetGame();
+      }
       // close to player ----------
-      float esivr = ivr*vstep;
+      float esidr = idr*vstep;
       if(dt_enemy[e]--<0){
         dt_enemy[e]=random(0,120);
         dd_enemy[e]=random(0,4);
       }
       switch(dd_enemy[e]){
         case 0: case 1:
-        v_enemy[e][0]+=dx*esivr;
-        v_enemy[e][1]+=dy*esivr;
+        v_enemy[e][0]+=dx*esidr;
+        v_enemy[e][1]+=dy*esidr;
         break;
         case 2:
-        v_enemy[e][0]+=dy*esivr;
-        v_enemy[e][1]-=dx*esivr;
+        v_enemy[e][0]+=dy*esidr;
+        v_enemy[e][1]-=dx*esidr;
         break;
         default:
-        v_enemy[e][0]-=dy*esivr;
-        v_enemy[e][1]+=dx*esivr;
+        v_enemy[e][0]-=dy*esidr;
+        v_enemy[e][1]+=dx*esidr;
         break;
       }
       // keep apart from other enemies ------------
@@ -161,8 +181,8 @@ void moveEnemies(){
           float dy2=q_enemy[e][1]-q_enemy[e2][1];
           float cs=SX2WX*10.0f;
           if(abs(dx2)<cs&&abs(dy2)<cs){
-            v_enemy[e][0]+=dx2*esivr;
-            v_enemy[e][1]+=dy2*esivr;
+            v_enemy[e][0]+=dx2*esidr;
+            v_enemy[e][1]+=dy2*esidr;
           }
         }
       }
@@ -183,13 +203,45 @@ void moveEnemies(){
       b_bullet[b]=true;
       q_bullet[b][0]=q_enemy[e][0];
       q_bullet[b][1]=q_enemy[e][1];
-      float bsivr = ivr*BULLETSPEED;
-      v_bullet[b][0]=dx*bsivr;
-      v_bullet[b][1]=dy*bsivr;
+      float bsidr = idr*BULLETSPEED;
+      v_bullet[b][0]=dx*bsidr;
+      v_bullet[b][1]=dy*bsidr;
     }
   }//e
 }
-
+void moveShot(){
+  if(t_shot>0){
+    t_shot--;
+    for(int e=0;e<ENEMIES;e++){
+      float dx=q_player[0]-q_enemy[e][0]; // P-E
+      float dy=q_player[1]-q_enemy[e][1];
+      float s=d_shot[0]*dx + d_shot[1]*dy; // s = D(P-E)'/|D| = D(P-E)'
+      dx += s*d_shot[0]; // (P-E)+sD = P+sD-E
+      dy += s*d_shot[1]; // (P-E)+sD = P+sD-E
+      float dr=sqrt(dx*dx+dy*dy);
+      if(dr<ENEMY_SIZE_CR){
+        h_enemy[e]--;
+        if(h_enemy[e]>0){
+          ht_enemy=60;
+          hi_enemy=e;
+        }else{
+          respawnEnemy(e);
+          ht_enemy=0;
+        }
+      }
+    }
+  }else{
+    if(keypressed[KEY_A]){
+      d_shot[0]=v_player[0];
+      d_shot[1]=v_player[1];
+      float idr=1.0f/sqrt(d_shot[0]*d_shot[0]+d_shot[1]*d_shot[1]);
+      d_shot[0]*=idr;
+      d_shot[1]*=idr;
+      p_shot = random(0,2);
+      t_shot = 3;
+    }
+  }
+}
 void moveBullets(){
   for(int b=0;b<BULLETS;b++){
     if(b_bullet[b]){
@@ -197,8 +249,13 @@ void moveBullets(){
       q_bullet[b][1]+=v_bullet[b][1];
       float dx = q_player[0]-q_bullet[b][0];
       float dy = q_player[1]-q_bullet[b][1];
+      float dr = sqrt(dx*dx+dy*dy);
       if(abs(dx)>WX||abs(dy)>WY){
         b_bullet[b]=false;
+      }
+      if(dr<SX2WX*(BULLET_SIZE_CR+PLAYER_SIZE_CR)){
+        h_player--;
+        if(h_player==0) resetGame();
       }
     }
   }
@@ -239,11 +296,11 @@ void drawPlayer(){
 void drawEnemies(){
   // draw enemies---------
   for(int e=0;e<ENEMIES;e++){
-    float cs=SX2WX*5.0f;
+    float cs=SX2WX*ENEMY_SIZE_DR;
     float dx=q_enemy[e][0]-q_player[0];
     float dy=q_enemy[e][1]-q_player[1];
     if(abs(dx) < WX/2-cs && abs(dy) < WY/2-cs){
-      arduboy.drawCircle((int)(dx*WX2SX)+SX/2,(int)(dy*WY2SY)+SY/2,5,WHITE);
+      arduboy.drawCircle((int)(dx*WX2SX)+SX/2,(int)(dy*WY2SY)+SY/2,ENEMY_SIZE_DR,WHITE);
     }
   }
 }
@@ -251,13 +308,44 @@ void drawBullets(){
   // draw enemies---------
   for(int b=0;b<BULLETS;b++){
     if(b_bullet[b]){
-      float cs=SX2WX*2.0f;
+      float cs=SX2WX*BULLET_SIZE_DR;
       float dx=q_bullet[b][0]-q_player[0];
       float dy=q_bullet[b][1]-q_player[1];
       if(abs(dx) < WX/2-cs && abs(dy) < WY/2-cs){
-        arduboy.drawCircle((int)(dx*WX2SX)+SX/2,(int)(dy*WY2SY)+SY/2,2,WHITE);
+        arduboy.drawCircle((int)(dx*WX2SX)+SX/2,(int)(dy*WY2SY)+SY/2,BULLET_SIZE_DR,WHITE);
       }
     }
+  }
+}
+void drawShot(){
+  if(t_shot){
+    char dx,dy;
+    if(abs(d_shot[0])*WY<abs(d_shot[1])*WX){
+      if(d_shot[0]>0){
+        dx = +SX/2/3;
+        dy = (char)(SY/2+(int)(d_shot[1]/d_shot[0]*((float)SX)/2.0f)/3.0f);
+      }else{
+        dx = -SX/2/3;
+        dy = (char)(SY/2+(int)(d_shot[1]/d_shot[0]*((float)SX)/2.0f)/3.0f);
+      }
+    }else{
+      if(d_shot[1]>0){
+        dx = (char)(SX/2+(int)(d_shot[0]/d_shot[1]*((float)SY)/2.0f)/3.0f);
+        dy = +SY/2/3;
+      }else{
+        dx = (char)(SX/2+(int)(d_shot[0]/d_shot[1]*((float)SY)/2.0f)/3.0f);
+        dy = -SY/2/3;
+      }
+    }
+//    arduboy.drawLine(SX/2+dx*p_shot,SY/2+dy*p_shot,SX/2+dx*(p_shot+1),SY/2+dy*(p_shot+1),WHITE);
+    arduboy.drawLine(SX/2,SY/2,SX/2+(int)(d_shot[0]*(float)SX/2),SY/2+(int)(d_shot[1]*(float)SY/2),WHITE);
+  }
+}
+void drawHp(){
+  arduboy.drawLine(0,0,h_player,0,WHITE);
+  if(ht_enemy>0){
+    arduboy.drawLine(0,3,h_enemy[hi_enemy],3,WHITE);
+    ht_enemy--;
   }
 }
 void drawDebug(){
@@ -269,13 +357,16 @@ void loopGame(){
   movePlayer();
   moveEnemies();
   moveBullets();
+  moveShot();
   // draw ------------
   arduboy.clear();
   drawStars();
   drawPlayer();
   drawEnemies();
   drawBullets();
-  drawDebug();
+  drawShot();
+  drawHp();
+  drawDebug();// debug
   arduboy.display();
 }
 
@@ -308,6 +399,9 @@ for(int l=0;l<BGSTARLAYERS;l++){
   q_player[1] = 0.0f;
   v_player[0] = 0.0f;
   v_player[1] = 0.0f;
+  h_player = 127;
+  hi_enemy = 0;
+  ht_enemy = 0;
   for(int b=0;b<BULLETS;b++) b_bullet[b]=false;
   for(int e=0;e<ENEMIES;e++) respawnEnemy(e);
   restartGame();
