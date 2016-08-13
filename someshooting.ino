@@ -46,6 +46,8 @@ float q_player[2]; //position of player
 float v_player[2]; //velosity of player
 float q_enemy[ENEMIES][2];
 float v_enemy[ENEMIES][2];
+char dd_enemy[ENEMIES];
+char dt_enemy[ENEMIES];
 bool b_bullet[BULLETS];
 float q_bullet[BULLETS][2];
 float v_bullet[BULLETS][2];
@@ -76,7 +78,7 @@ void loop(){
   for(int k=0;k<KEYS;k++) keypressed[k]=0; //clear key
 }
 void movePlayer(){
-  float vstep  = 0.005f;
+  float vstep  = 0.004f;
   float vdecay = 0.9f;
   float vmax   = +10;
   float vmin   = -10;
@@ -115,26 +117,62 @@ void respawnEnemy(int e){
     return;
 
   }
+  dt_enemy[e]=(char)random(0,120);
+  dd_enemy[e]=(char)random(0,4);
 }
 
 void moveEnemies(){
     //enemy motion -----------------
-#define ENEMYSPEED (0.01f)
   for(int e=0;e<ENEMIES;e++){
+    float vstep  = 0.0025f;
+    float vdecay = 0.9f;
+    float vmax   = +10;
+    float vmin   = -10;
     float dx = q_player[0]-q_enemy[e][0];
     float dy = q_player[1]-q_enemy[e][1];
     float ivr = 1.0f/sqrt(dx*dx+dy*dy);
-    if(abs(dx)>WX*2||abs(dy)>WY*2){
+    if(abs(dx)>WX*1.1||abs(dy)>WY*1.1){
       respawnEnemy(e);
     }else{
-      float esivr = ivr*ENEMYSPEED;
-      v_enemy[e][0]=dx*esivr;
-      v_enemy[e][1]=dy*esivr;
+      // close to player ----------
+      float esivr = ivr*vstep;
+      if(dt_enemy[e]--<0){
+        dt_enemy[e]=random(0,120);
+        dd_enemy[e]=random(0,4);
+      }
+      switch(dd_enemy[e]){
+        case 0: case 1:
+        v_enemy[e][0]+=dx*esivr;
+        v_enemy[e][1]+=dy*esivr;
+        break;
+        case 2:
+        v_enemy[e][0]+=dy*esivr;
+        v_enemy[e][1]-=dx*esivr;
+        break;
+        default:
+        v_enemy[e][0]-=dy*esivr;
+        v_enemy[e][1]+=dx*esivr;
+        break;
+      }
+      // keep apart from other enemies ------------
+      for(int e2=0;e2<ENEMIES;e2++){
+        if(e2!=e){
+          float dx2=q_enemy[e][0]-q_enemy[e2][0];
+          float dy2=q_enemy[e][1]-q_enemy[e2][1];
+          float cs=SX2WX*10.0f;
+          if(abs(dx2)<cs&&abs(dy2)<cs){
+            v_enemy[e][0]+=dx2*esivr;
+            v_enemy[e][1]+=dy2*esivr;
+          }
+        }
+      }
+      v_enemy[e][0]=max(vmin,min(vmax,v_enemy[e][0]))*vdecay;
+      v_enemy[e][1]=max(vmin,min(vmax,v_enemy[e][1]))*vdecay;
       q_enemy[e][0]+=v_enemy[e][0];
       q_enemy[e][1]+=v_enemy[e][1];
     }
     //fire -----------------
-#define FIREFRAMES (128)
+#define FIREFRAMES (32)
 #define BULLETSPEED (0.04f)
     float br=random(0,FIREFRAMES);
     if(br==0 && bullets<BULLETS){
@@ -159,7 +197,7 @@ void moveBullets(){
       q_bullet[b][1]+=v_bullet[b][1];
       float dx = q_player[0]-q_bullet[b][0];
       float dy = q_player[1]-q_bullet[b][1];
-      if(abs(dx)>WX*2||abs(dy)>WY*2){
+      if(abs(dx)>WX||abs(dy)>WY){
         b_bullet[b]=false;
       }
     }
@@ -223,28 +261,7 @@ void drawBullets(){
   }
 }
 void drawDebug(){
-#if 0
-  for(int e=0;e<ENEMIES;e++){
-    char *p;
-    p=(char*)&q_enemy[e][0];
-    vram[e+SX*0]=*p++;
-    vram[e+SX*1]=*p++;
-    vram[e+SX*2]=*p++;
-    vram[e+SX*3]=*p++;
-    p=(char*)&q_enemy[e][1];
-    vram[e+SX*4]=*p++;
-    vram[e+SX*5]=*p++;
-    vram[e+SX*6]=*p++;
-    vram[e+SX*7]=*p++;
-  }
-  vram[ENEMIES+0+SX*0]=0x55;
-  vram[ENEMIES+0+SX*1]=0x55;
-  vram[ENEMIES+0+SX*2]=0x55;
-  vram[ENEMIES+0+SX*3]=0x55;
-  vram[ENEMIES+0+SX*4]=0x55;
-  vram[ENEMIES+0+SX*5]=0x55;
-  vram[ENEMIES+0+SX*6]=0x55;
-  vram[ENEMIES+0+SX*7]=0x55;
+#if 1
 #endif
 }
 void loopGame(){
