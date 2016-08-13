@@ -35,10 +35,11 @@ boolean keypressed[KEYS];
 Arduboy arduboy;
 AbPrinter text(arduboy);
 
-#define BGSTARS      ( 3) // number of background stars
+#define BGSTARS      (10) // number of background stars
 #define BGSTARLAYERS ( 3) // number of background star layers
 #define ENEMIES      ( 6) // number of enemies
 #define BULLETS      (10) // max number of bullets 
+#define DEBRIS       (20) // max number of debris
 #define PLAYER_SIZE_DR (5.0f) // displayed radius of player [px]
 #define PLAYER_SIZE_CR (2.0f) // collision radius of player [px]
 #define ENEMY_SIZE_DR  (5.0f) // displayed radius of enemy [px]
@@ -50,7 +51,9 @@ int frame_rate  = 60;  // frames/sec
 float q_bgstar[2][BGSTARS][BGSTARLAYERS]; // position of bg stars
 float q_player[2];          //position of player
 float v_player[2];          //velosity of player
-char h_player;             // hitpoint of player
+int h_player;             // hitpoint of player
+int score  =0;              // score
+int hiscore=0;              // hiscore
 float q_enemy[ENEMIES][2];  // position of enemy e
 float v_enemy[ENEMIES][2];  // velosity of enemy e
 char dd_enemy[ENEMIES]; // direction of enemy e
@@ -64,6 +67,14 @@ float v_bullet[BULLETS][2]; // velosity of bullet b
 char  t_shot=0;  // shot left time
 char  p_shot=0;  // shot pattern
 float d_shot[2]; // shot direction
+float q_debri[DEBRIS][2];
+float v_debri[DEBRIS][2];
+char  t_debri[DEBRIS];
+char  debris;
+char  i_debris;
+char i_anime=0;
+char i_anime_max=2;
+
 void setup(){
   arduboy.begin();
   arduboy.initRandomSeed();
@@ -72,6 +83,7 @@ void setup(){
   arduboy.setFrameRate(frame_rate);
 }
 void initGame(){
+  hiscore=0;
   resetGame();
 }
 
@@ -91,7 +103,7 @@ void loop(){
   for(int k=0;k<KEYS;k++) keypressed[k]=0; //clear key
 }
 void movePlayer(){
-  float vstep  = 0.004f;
+  float vstep  = 0.008f;
   float vdecay = 0.9f;
   float vmax   = +10;
   float vmin   = -10;
@@ -138,7 +150,7 @@ void respawnEnemy(int e){
 void moveEnemies(){
     //enemy motion -----------------
   for(int e=0;e<ENEMIES;e++){
-    float vstep  = 0.001f;
+    float vstep  = 0.002f;
     float vdecay = 0.9f;
     float vmax   = +10;
     float vmin   = -10;
@@ -151,8 +163,10 @@ void moveEnemies(){
     }else{
       // collision to player ----------
       if(dr<SX2WX*(PLAYER_SIZE_CR+ENEMY_SIZE_CR)){
-        h_player--;
-        if(h_player==0) resetGame();
+        h_player-=10;
+        if(h_player<=0){
+          resetGame();
+        }
       }
       // close to player ----------
       float esidr = idr*vstep;
@@ -219,14 +233,29 @@ void moveShot(){
       dx -= s*d_shot[0]; // (E-P)-sD = E-(P+sD)
       dy -= s*d_shot[1]; // (E-P)-sD = E-(P+sD)
       float dr=sqrt(dx*dx+dy*dy);
-      if(dr<ENEMY_SIZE_CR*SX2WX){
+      if(dr<ENEMY_SIZE_CR*SX2WX && s>0){
         h_enemy[e]--;
+        char newdebris;
         if(h_enemy[e]>0){
           ht_enemy=60;
           hi_enemy=e;
+          newdebris=1;
         }else{
+          //enemy dies
+          score+=100;
+          hiscore=max(score,hiscore);
           respawnEnemy(e);
           ht_enemy=0;
+          newdebris=10;
+        }
+        for(int n=0;n<newdebris||debris<DEBRIS;n++){
+          t_debri[i_debris]=20;
+          v_debri[i_debris][0]=d_shot[0]*0.05f+((float)random(0,200)/100.0f-1.0f)*0.02f;
+          v_debri[i_debris][1]=d_shot[1]*0.05f+((float)random(0,200)/100.0f-1.0f)*0.02f;
+          q_debri[i_debris][0]=q_enemy[e][0];
+          q_debri[i_debris][1]=q_enemy[e][1];
+          i_debris=(i_debris+1)%DEBRIS;
+          debris++;
         }
       }
     }
@@ -237,7 +266,7 @@ void moveShot(){
       float idr=1.0f/sqrt(d_shot[0]*d_shot[0]+d_shot[1]*d_shot[1]);
       d_shot[0]*=idr;
       d_shot[1]*=idr;
-      p_shot = random(0,2);
+      p_shot = random(0,3);
       t_shot = 3;
     }
   }
@@ -254,8 +283,9 @@ void moveBullets(){
         b_bullet[b]=false;
       }
       if(dr<SX2WX*(BULLET_SIZE_CR+PLAYER_SIZE_CR)){
-        h_player--;
-        if(h_player==0) resetGame();
+        h_player-=5;
+        b_bullet[b]=false;
+        if(h_player<=0) resetGame();
       }
     }
   }
@@ -312,33 +342,19 @@ void drawBullets(){
       float dx=q_bullet[b][0]-q_player[0];
       float dy=q_bullet[b][1]-q_player[1];
       if(abs(dx) < WX/2-cs && abs(dy) < WY/2-cs){
-        arduboy.drawCircle((int)(dx*WX2SX)+SX/2,(int)(dy*WY2SY)+SY/2,BULLET_SIZE_DR,WHITE);
+        arduboy.drawCircle((int)(dx*WX2SX)+SX/2,(int)(dy*WY2SY)+SY/2,BULLET_SIZE_DR-i_anime,WHITE);
       }
     }
   }
 }
 void drawShot(){
   if(t_shot){
-    char dx,dy;
-    if(abs(d_shot[0])*WY<abs(d_shot[1])*WX){
-      if(d_shot[0]>0){
-        dx = +SX/2/3;
-        dy = (char)(SY/2+(int)(d_shot[1]/d_shot[0]*((float)SX)/2.0f)/3.0f);
-      }else{
-        dx = -SX/2/3;
-        dy = (char)(SY/2+(int)(d_shot[1]/d_shot[0]*((float)SX)/2.0f)/3.0f);
-      }
-    }else{
-      if(d_shot[1]>0){
-        dx = (char)(SX/2+(int)(d_shot[0]/d_shot[1]*((float)SY)/2.0f)/3.0f);
-        dy = +SY/2/3;
-      }else{
-        dx = (char)(SX/2+(int)(d_shot[0]/d_shot[1]*((float)SY)/2.0f)/3.0f);
-        dy = -SY/2/3;
-      }
-    }
-//    arduboy.drawLine(SX/2+dx*p_shot,SY/2+dy*p_shot,SX/2+dx*(p_shot+1),SY/2+dy*(p_shot+1),WHITE);
-    arduboy.drawLine(SX/2,SY/2,SX/2+(int)(d_shot[0]*(float)SX/2),SY/2+(int)(d_shot[1]*(float)SY/2),WHITE);
+    int dx=(int)(d_shot[0]*(float)SX/6);
+    int dy=(int)(d_shot[1]*(float)SY/6);
+    arduboy.drawLine(SX/2+dx*p_shot,
+                     SY/2+dy*p_shot,
+                     SX/2+dx*(p_shot+1),
+                     SY/2+dy*(p_shot+1),WHITE);
   }
 }
 void drawHp(){
@@ -347,6 +363,59 @@ void drawHp(){
     arduboy.drawLine(0,3,h_enemy[hi_enemy],3,WHITE);
     ht_enemy--;
   }
+}
+void moveDebris(){
+  for(int n=0;n<debris;n++){
+    int d=(i_debris+n)%DEBRIS;
+    q_debri[d][0]+=v_debri[d][0];
+    q_debri[d][1]+=v_debri[d][1];
+    v_debri[d][0]*=0.95;
+    v_debri[d][1]*=0.95;
+    t_debri[d]--;
+    if(t_debri[d]==0){
+      i_debris=(i_debris+1)%DEBRIS;
+      debris--;
+    }
+  }
+}
+void drawDebris(){
+  for(int n=0;n<debris;n++){
+    int d=(i_debris+n)%DEBRIS;
+    float dx=q_debri[d][0]-q_player[0];
+    float dy=q_debri[d][1]-q_player[1];
+    if(abs(dx)<WX && abs(dy)<WY){
+      arduboy.drawPixel(dx*WX2SX+SX/2,dy*WY2SY+SY/2,WHITE);
+    }
+  }
+}
+String ralign(int i, int n){
+  int spc=0;
+  if(        0<=+i && +i<=       9) spc=n-1;
+  if(       10<=+i && +i<=      99) spc=n-2;
+  if(      100<=+i && +i<=     999) spc=n-3;
+  if(     1000<=+i && +i<=    9999) spc=n-4;
+  if(    10000<=+i && +i<=   99999) spc=n-5;
+  if(   100000<=+i && +i<=  999999) spc=n-6;
+  if(  1000000<=+i && +i<= 9999999) spc=n-7;
+  if( 10000000<=+i && +i<=99999999) spc=n-8;
+  if(100000000<=+i                ) spc=n-9;
+  if(        0< -i && -i<=         9) spc=n-2;
+  if(       10<=-i && -i<=        99) spc=n-3;
+  if(      100<=-i && -i<=       999) spc=n-4;
+  if(     1000<=-i && -i<=      9999) spc=n-5;
+  if(    10000<=-i && -i<=     99999) spc=n-6;
+  if(   100000<=-i && -i<=    999999) spc=n-7;
+  if(  1000000<=-i && -i<=   9999999) spc=n-8;
+  if( 10000000<=-i && -i<=  99999999) spc=n-9;
+  if(100000000<=-i                  ) spc=n-10;
+  String str="";
+  for(int c=0;c<spc;c++)str+=" ";
+  return str+String(i);
+}
+
+void drawScore(){
+  text.setCursor(0,SY-8);
+  text.print("SCORE:"+ralign(score,5)+" HI:"+ralign(hiscore,5));
 }
 void drawDebug(){
 #if 1
@@ -358,43 +427,29 @@ void loopGame(){
   moveEnemies();
   moveBullets();
   moveShot();
+  moveDebris();
   // draw ------------
   arduboy.clear();
+  i_anime=(i_anime+1)%i_anime_max;
+  drawScore();
   drawStars();
   drawPlayer();
   drawEnemies();
   drawBullets();
   drawShot();
   drawHp();
+  drawDebris();
   drawDebug();// debug
   arduboy.display();
 }
 
-String ralign(int i, int n){
-  int spc=0;
-  if(    0<=+i && +i<=    9) spc=n-1;
-  if(   10<=+i && +i<=   99) spc=n-2;
-  if(  100<=+i && +i<=  999) spc=n-3;
-  if( 1000<=+i && +i<= 9999) spc=n-4;
-  if(10000<=+i             ) spc=n-5;
-  if(    0< -i && -i<=    9) spc=n-2;
-  if(   10<=-i && -i<=   99) spc=n-3;
-  if(  100<=-i && -i<=  999) spc=n-4;
-  if( 1000<=-i && -i<= 9999) spc=n-5;
-  if(10000<=-i             ) spc=n-6;
-  String str="";
-  for(int c=0;c<spc;c++)str+=" ";
-  return str+String(i);
-}
-
-
 void resetGame(){
-for(int l=0;l<BGSTARLAYERS;l++){
-  for(int s=0;s<BGSTARS;s++){
-    q_bgstar[0][s][l] = (float)random(0,SX-1)/(float)SX*WX+WX0;
-    q_bgstar[1][s][l] = (float)random(0,SY-1)/(float)SY*WY+WY0;
+  for(int l=0;l<BGSTARLAYERS;l++){
+    for(int s=0;s<BGSTARS;s++){
+      q_bgstar[0][s][l] = (float)random(0,SX-1)/(float)SX*WX+WX0;
+      q_bgstar[1][s][l] = (float)random(0,SY-1)/(float)SY*WY+WY0;
+    }
   }
-}
   q_player[0] = 0.0f;
   q_player[1] = 0.0f;
   v_player[0] = 0.0f;
@@ -404,12 +459,12 @@ for(int l=0;l<BGSTARLAYERS;l++){
   ht_enemy = 0;
   for(int b=0;b<BULLETS;b++) b_bullet[b]=false;
   for(int e=0;e<ENEMIES;e++) respawnEnemy(e);
-  restartGame();
-}
-
-void restartGame(){
+  i_debris = 0;
+  debris = 0;
+  score=0;
   arduboy.clear();
   arduboy.display();
+  i_anime=0;
 }
 
 
