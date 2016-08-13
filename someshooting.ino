@@ -35,9 +35,9 @@ boolean keypressed[KEYS];
 Arduboy arduboy;
 AbPrinter text(arduboy);
 
-#define BGSTARS      (10) // number of background stars
+#define BGSTARS      ( 3) // number of background stars
 #define BGSTARLAYERS ( 3) // number of background star layers
-#define ENEMIES      ( 1) // number of enemies
+#define ENEMIES      ( 6) // number of enemies
 #define BULLETS      (10) // max number of bullets 
 #define PLAYER_SIZE_DR (5.0f) // displayed radius of player [px]
 #define PLAYER_SIZE_CR (2.0f) // collision radius of player [px]
@@ -138,7 +138,7 @@ void respawnEnemy(int e){
 void moveEnemies(){
     //enemy motion -----------------
   for(int e=0;e<ENEMIES;e++){
-    float vstep  = 0.0000f;
+    float vstep  = 0.001f;
     float vdecay = 0.9f;
     float vmax   = +10;
     float vmin   = -10;
