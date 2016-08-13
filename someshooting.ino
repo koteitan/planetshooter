@@ -18,6 +18,8 @@
 #define BY  (BY1-BY0)
 #define WY2SY ((float)SY/WY)
 #define WX2SX ((float)SX/WX)
+#define SY2WY ((float)WY/SY)
+#define SX2WX ((float)WX/SX)
 unsigned char *vram; // =arduboy.getBuffer()
 
 #define KEY_XM 0
@@ -35,11 +37,13 @@ AbPrinter text(arduboy);
 
 #define BGSTARS      10 // number of background stars
 #define BGSTARLAYERS  3 // number of background star layers
+#define ENEMIES       6 //
 int frame_rate  = 60;  // frames/sec
 float q_bgstar[2][BGSTARS][BGSTARLAYERS]; // position of bg stars
 float q_player[2]; //position of player
 float v_player[2]; //velosity of player
-
+float q_enemy[ENEMIES][2];
+float v_enemy[ENEMIES][2];
 void setup(){
   arduboy.begin();
   arduboy.initRandomSeed();
@@ -66,11 +70,11 @@ void loop(){
   if(msdif>msmax)msmax=msdif;
   for(int k=0;k<KEYS;k++) keypressed[k]=0; //clear key
 }
-void loopGame(){
-  float vstep  = 0.01f;
-  float vdecay = 0.95;
-  float vmax   = +2;
-  float vmin   = -2;
+void movePlayer(){
+  float vstep  = 0.005f;
+  float vdecay = 0.9f;
+  float vmax   = +10;
+  float vmin   = -10;
   if(keypressed[KEY_XM]){v_player[0]+= -vstep;}
   if(keypressed[KEY_XP]){v_player[0]+= +vstep;}
   if(keypressed[KEY_YM]){v_player[1]+= -vstep;}
@@ -83,9 +87,49 @@ void loopGame(){
   ivr=1.0f/sqrt(v_player[0]*v_player[0]+v_player[1]*v_player[1]);
   dx=v_player[0]*ivr;
   dy=v_player[1]*ivr;
-  
-  // draw clear------------
-  arduboy.clear();
+}
+
+void respawnEnemy(int e){
+  int r=random(0,4);
+  switch(r){
+    case 0:
+      q_enemy[e][0]=(((float)random(0,65536))/65536.0f)*WX*4.0f-WX*2.0f+q_player[0];
+      q_enemy[e][1]=q_player[1]-WY;
+    return;
+    case 1:
+      q_enemy[e][0]=(((float)random(0,65536))/65536.0f)*WX*4.0f-WX*2.0f+q_player[0];
+      q_enemy[e][1]=q_player[1]+WY;
+    return;
+    case 2:
+      q_enemy[e][0]=q_player[0]-WX;
+      q_enemy[e][1]=(((float)random(0,65536))/65536.0f)*WY*4.0f-WY*2.0f+q_player[1];
+    return;
+    default:
+      q_enemy[e][0]=q_player[0]+WX;
+      q_enemy[e][1]=(((float)random(0,65536))/65536.0f)*WY*4.0f-WY*2.0f+q_player[1];
+    return;
+
+  }
+}
+
+void moveEnemies(){
+  for(int e=0;e<ENEMIES;e++){
+    float vr  = 0.01f;
+    float dx = q_player[0]-q_enemy[e][0];
+    float dy = q_player[1]-q_enemy[e][1];
+    if(abs(dx)>WX*2||abs(dy)>WY*2){
+      respawnEnemy(e);
+    }else{
+      vr = vr/sqrt(dx*dx+dy*dy);
+      v_enemy[e][0]=dx*vr;
+      v_enemy[e][1]=dy*vr;
+      q_enemy[e][0]+=v_enemy[e][0];
+      q_enemy[e][1]+=v_enemy[e][1];
+    }
+  }
+}
+
+void drawStars(){
   // draw stars------------
   float layerscale[3]={1.0f, 0.5f, 0.25f};
   for(int l=0;l<BGSTARLAYERS;l++){
@@ -97,7 +141,12 @@ void loopGame(){
       vram[iy*WIDTH + sx] |= 1<<by;
     }
   }
+}
+void drawPlayer(){
   // draw player---------
+  float ivr=1.0f/sqrt(v_player[0]*v_player[0]+v_player[1]*v_player[1]);
+  float dx=v_player[0]*ivr;
+  float dy=v_player[1]*ivr;
   float cosm = cos((180.0f-60.0f)/180.0f*PI);
   float cosp = cos((180.0f+60.0f)/180.0f*PI);
   float sinm = sin((180.0f-60.0f)/180.0f*PI);
@@ -112,6 +161,53 @@ void loopGame(){
   int y3=SY/2+(int)((sinp*dx+cosp*dy)*5.0f);
   arduboy.fillTriangle(x0,y0,x1,y1,x2,y2,WHITE);
   arduboy.fillTriangle(x0,y0,x1,y1,x3,y3,WHITE);
+}
+void drawEnemies(){
+  // draw enemies---------
+  for(int e=0;e<ENEMIES;e++){
+    float cs=SX2WX*5.0f;
+    float dx=q_enemy[e][0]-q_player[0];
+    float dy=q_enemy[e][1]-q_player[1];
+    if(abs(dx) < WX/2-cs && abs(dy) < WY/2-cs){
+      arduboy.drawCircle((int)(dx*WX2SX)+SX/2,(int)(dy*WY2SY)+SY/2,5,WHITE);
+    }
+  }
+}
+void drawDebug(){
+#if 0
+  for(int e=0;e<ENEMIES;e++){
+    char *p;
+    p=(char*)&q_enemy[e][0];
+    vram[e+SX*0]=*p++;
+    vram[e+SX*1]=*p++;
+    vram[e+SX*2]=*p++;
+    vram[e+SX*3]=*p++;
+    p=(char*)&q_enemy[e][1];
+    vram[e+SX*4]=*p++;
+    vram[e+SX*5]=*p++;
+    vram[e+SX*6]=*p++;
+    vram[e+SX*7]=*p++;
+  }
+  vram[ENEMIES+0+SX*0]=0x55;
+  vram[ENEMIES+0+SX*1]=0x55;
+  vram[ENEMIES+0+SX*2]=0x55;
+  vram[ENEMIES+0+SX*3]=0x55;
+  vram[ENEMIES+0+SX*4]=0x55;
+  vram[ENEMIES+0+SX*5]=0x55;
+  vram[ENEMIES+0+SX*6]=0x55;
+  vram[ENEMIES+0+SX*7]=0x55;
+#endif
+}
+void loopGame(){
+  // move ------------
+  movePlayer();
+  moveEnemies();
+  // draw ------------
+  arduboy.clear();
+  drawStars();
+  drawPlayer();
+  drawEnemies();
+  drawDebug();
   arduboy.display();
 }
 
@@ -144,6 +240,7 @@ for(int l=0;l<BGSTARLAYERS;l++){
   q_player[1] = 0.0f;
   v_player[0] = 0.0f;
   v_player[1] = 0.0f;
+  for(int e=0;e<ENEMIES;e++) respawnEnemy(e);
   restartGame();
 }
 
