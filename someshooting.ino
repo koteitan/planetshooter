@@ -38,7 +38,7 @@ AbPrinter text(arduboy);
 #define BGSTARS      10 // number of background stars
 #define BGSTARLAYERS  3 // number of background star layers
 #define ENEMIES       6 // number of enemies
-#define BULLETS      20 // max number of bullets 
+#define BULLETS      10 // max number of bullets 
 int bullets = 0;        //     number of bullets now
 int frame_rate  = 60;  // frames/sec
 float q_bgstar[2][BGSTARS][BGSTARLAYERS]; // position of bg stars
@@ -134,8 +134,8 @@ void moveEnemies(){
       q_enemy[e][1]+=v_enemy[e][1];
     }
     //fire -----------------
-#define FIREFRAMES (256)
-#define BULLETSPEED (0.1f)
+#define FIREFRAMES (128)
+#define BULLETSPEED (0.04f)
     float br=random(0,FIREFRAMES);
     if(br==0 && bullets<BULLETS){
       int b=0;
@@ -145,7 +145,7 @@ void moveEnemies(){
       b_bullet[b]=true;
       q_bullet[b][0]=q_enemy[e][0];
       q_bullet[b][1]=q_enemy[e][1];
-      float bsivr = ivr*ENEMYSPEED;
+      float bsivr = ivr*BULLETSPEED;
       v_bullet[b][0]=dx*bsivr;
       v_bullet[b][1]=dy*bsivr;
     }
