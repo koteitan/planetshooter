@@ -39,12 +39,12 @@ AbPrinter text(arduboy);
 #define BGSTARLAYERS ( 3) // number of background star layers
 #define ENEMIES      ( 1) // number of enemies
 #define BULLETS      (10) // max number of bullets 
-#define PLAYER_SIZE_DR (5) // displayed radius of player [px]
-#define PLAYER_SIZE_CR (2) // collision radius of player [px]
-#define ENEMY_SIZE_DR  (5) // displayed radius of enemy [px]
-#define ENEMY_SIZE_CR  (5) // collision radius of enemy [px]
-#define BULLET_SIZE_DR (2) // displayed radius of bullet [px]
-#define BULLET_SIZE_CR (2) // collision radius of bullet [px]
+#define PLAYER_SIZE_DR (5.0f) // displayed radius of player [px]
+#define PLAYER_SIZE_CR (2.0f) // collision radius of player [px]
+#define ENEMY_SIZE_DR  (5.0f) // displayed radius of enemy [px]
+#define ENEMY_SIZE_CR  (5.0f) // collision radius of enemy [px]
+#define BULLET_SIZE_DR (2.0f) // displayed radius of bullet [px]
+#define BULLET_SIZE_CR (2.0f) // collision radius of bullet [px]
 int bullets = 0;        //     number of bullets now
 int frame_rate  = 60;  // frames/sec
 float q_bgstar[2][BGSTARS][BGSTARLAYERS]; // position of bg stars
@@ -213,13 +213,13 @@ void moveShot(){
   if(t_shot>0){
     t_shot--;
     for(int e=0;e<ENEMIES;e++){
-      float dx=q_player[0]-q_enemy[e][0]; // P-E
-      float dy=q_player[1]-q_enemy[e][1];
-      float s=d_shot[0]*dx + d_shot[1]*dy; // s = D(P-E)'/|D| = D(P-E)'
-      dx += s*d_shot[0]; // (P-E)+sD = P+sD-E
-      dy += s*d_shot[1]; // (P-E)+sD = P+sD-E
+      float dx=q_enemy[e][0]-q_player[0]; // E-P
+      float dy=q_enemy[e][1]-q_player[1]; // E-P
+      float s=d_shot[0]*dx + d_shot[1]*dy; // s = D(E-P)'/|D| = D(E-P)'
+      dx -= s*d_shot[0]; // (E-P)-sD = E-(P+sD)
+      dy -= s*d_shot[1]; // (E-P)-sD = E-(P+sD)
       float dr=sqrt(dx*dx+dy*dy);
-      if(dr<ENEMY_SIZE_CR){
+      if(dr<ENEMY_SIZE_CR*SX2WX){
         h_enemy[e]--;
         if(h_enemy[e]>0){
           ht_enemy=60;
