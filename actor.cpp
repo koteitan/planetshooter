@@ -6,11 +6,11 @@
 void Camera::move(Game *pG){
   float rate   = 0.75f;
   float vmax   = 1.0f;
-  float vstep  = 0.15f;
+  float vstep  = 0.08f;
   float dx = pG->pPlayer->v[0];
   float dy = pG->pPlayer->v[1];
   float r2 = dx*dx+dy*dy;
-  if(r2>10e-10){
+  if(r2>10e-30){
     r2=1.0f/sqrt(r2);
     dx=dx*r2;
     dy=dy*r2;
@@ -52,7 +52,7 @@ void Player::draw(Game *pG){
   int py = pG->pPlayer->q[1]*WY2SY;
   float ivr=sqrt(v[0]*v[0]+v[1]*v[1]);
   float dx,dy;
-  if(ivr>10e-10){
+  if(ivr>10e-30){
     ivr = 1.0f/ivr;
     dx=v[0]*ivr;
     dy=v[1]*ivr;
