@@ -9,14 +9,19 @@ class Bullet;
 class Shot;
 class BackGroundStar;
 class Debri;
-#if 0
+typedef enum{
+  eGAME_STT_PLAY = 0,
+  eGAME_STT_DIED = 1,
+  eGAME_STTS     = 2
+}eGAME_STT;
+#if 1
 #define BGSTARS      (10) // number of background stars
 #define BGSTARLAYERS ( 3) // number of background star layers
 #define ENEMIES      ( 6) // number of enemies
 #define BULLETS      (10) // max number of bullets 
-#define DEBRIS       (20) // max number of debris
+#define DEBRIS       (10) // max number of debris
 #else // low cost
-#define BGSTARS      (10) // number of background stars
+#define BGSTARS      ( 3) // number of background stars
 #define BGSTARLAYERS ( 3) // number of background star layers
 #define ENEMIES      ( 2) // number of enemies
 #define BULLETS      ( 2) // max number of bullets 
@@ -48,6 +53,8 @@ class Game{
   int iDebris;
   int iAnime;
   int iAnimeMax;
+  int t_died;
+  eGAME_STT state;
   Game(Arduboy *_pA, bool *_kp);
   void reset    (void);
   void drawScore(void);

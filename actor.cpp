@@ -18,12 +18,18 @@ void Camera::move(Game *pG){
     dx=0.0f;
     dy=0.0f;
   }
-  c[0] = pG->pPlayer->q[0] + dx*rate*SX2WX;
-  c[1] = pG->pPlayer->q[1] + dy*rate*SY2WY/2;
+  c[0] = pG->pPlayer->q[0] + dx*rate*2;
+  c[1] = pG->pPlayer->q[1] + dy*rate*1;
   v[0]=max(-vmax,min(vmax,(c[0]-q[0])*vstep));
   v[1]=max(-vmax,min(vmax,(c[1]-q[1])*vstep));
   q[0]+=v[0];
   q[1]+=v[1];
+}
+void Camera::draw(Game *pG){
+  int cx = pG->pCamera->c[0]*WX2SX - pG->pCamera->q[0]*WX2SX;
+  int cy = pG->pCamera->c[1]*WY2SY - pG->pCamera->q[1]*WY2SY;
+  pG->pA->drawLine(SX/2+cx-2,SY/2+cy-2,SX/2+cx+2,SY/2+cy+2,WHITE);
+  pG->pA->drawLine(SX/2+cx-2,SY/2+cy+2,SX/2+cx+2,SY/2+cy-2,WHITE);
 }
 //Player --------------------------------------
 void Player::move(Game *pG){
@@ -42,8 +48,6 @@ void Player::move(Game *pG){
 void Player::draw(Game *pG){
   int cx = pG->pCamera->q[0]*WX2SX;
   int cy = pG->pCamera->q[1]*WY2SY;
-  int cx2 = pG->pCamera->c[0]*WX2SX;
-  int cy2 = pG->pCamera->c[1]*WY2SY;
   int px = pG->pPlayer->q[0]*WX2SX;
   int py = pG->pPlayer->q[1]*WY2SY;
   float ivr=sqrt(v[0]*v[0]+v[1]*v[1]);
@@ -70,8 +74,6 @@ void Player::draw(Game *pG){
   int y3=SY/2+(int)((sinp*dx+cosp*dy)*5.0f)+(py-cy);
   pG->pA->fillTriangle(x0,y0,x1,y1,x2,y2,WHITE);
   pG->pA->fillTriangle(x0,y0,x1,y1,x3,y3,WHITE);
-  pG->pA->drawLine(SX/2+cx2-cx-2,SY/2+cy2-cy-2,SX/2+cx2-cx+2,SY/2+cy2-cy+2,WHITE);
-  pG->pA->drawLine(SX/2+cx2-cx-2,SY/2+cy2-cy+2,SX/2+cx2-cx+2,SY/2+cy2-cy-2,WHITE);
 }
 void Player::drawHp(Game *pG){
   pG->pA->drawLine(0,SY-1,h,SY-1,WHITE);
@@ -86,9 +88,9 @@ void Shot::move(Game *pG){
       float dx=pE->q[0]-pP->q[0]; // E-P
       float dy=pE->q[1]-pP->q[1]; // E-P
       float s=d[0]*dx + d[1]*dy; // s = D(E-P)'/|D| = D(E-P)'
-      dx -= s*d[0]; // (E-P)-sD = E-(P+sD)
-      dy -= s*d[1]; // (E-P)-sD = E-(P+sD)
-      float dr=sqrt(dx*dx+dy*dy);
+      float cx = dx-s*d[0]; // (E-P)-sD = E-(P+sD)
+      float cy = dy-s*d[1]; // (E-P)-sD = E-(P+sD)
+      float dr=sqrt(cx*cx+cy*cy);
       if(dr<ENEMY_SIZE_CR*SX2WX && s>0){
         pE->h--;
         char newdebris;
@@ -96,6 +98,8 @@ void Shot::move(Game *pG){
           pG->tEnemyHp=60;
           pG->iEnemyHp=e;
           newdebris=1;
+          pE->v[0]+=dx*0.03f;
+          pE->v[1]+=dy*0.03f;
         }else{
           //enemy dies
           pG->score+=100;
@@ -136,10 +140,10 @@ void Shot::draw(Game *pG){
     int cy = pG->pCamera->q[1]*WY2SY;
     int dx=(int)(d[0]*(float)SX/6);
     int dy=(int)(d[1]*(float)SY/6);
-    pG->pA->drawLine(SX/2+dx*(dp+0)+(px-cx),
-                     SY/2+dy*(dp+0)+(py-cy),
-                     SX/2+dx*(dp+1)+(px-cx),
-                     SY/2+dy*(dp+1)+(py-cy),WHITE);
+    pG->pA->drawLine(SX/2+dx*(dp+1)+(px-cx),
+                     SY/2+dy*(dp+1)+(py-cy),
+                     SX/2+dx*(dp+2)+(px-cx),
+                     SY/2+dy*(dp+2)+(py-cy),WHITE);
   }
 }
 //Enemy ----------------------------------------
@@ -147,60 +151,55 @@ bool Enemy::move(Game *pG){
   bool isPlayerAlive=true;
   float vstep  = 0.002f;
   float vdecay = 0.9f;
-  float vmax   = +10;
-  float vmin   = -10;
+  float vmax   = +0.01f;
   float dx = pG->pPlayer->q[0]-q[0];
   float dy = pG->pPlayer->q[1]-q[1];
   float dr   = sqrt(dx*dx+dy*dy);
   float idr  = 1.0f/dr;
-  if(abs(dx)>WX*1.1||abs(dy)>WY*1.1){
-    respawn(pG);
-  }else{
-    // collision to player 
-    if(dr<SX2WX*(PLAYER_SIZE_CR+ENEMY_SIZE_CR)){
-      pG->pPlayer->h-=10;
-      if(pG->pPlayer->h<=0){
-        isPlayerAlive = false;
-      }
+  // collision to player 
+  if(dr<SX2WX*(PLAYER_SIZE_CR+ENEMY_SIZE_CR)){
+    pG->pPlayer->h-=10;
+    if(pG->pPlayer->h<=0){
+      isPlayerAlive = false;
     }
-    // close to player 
-    float esidr = idr*vstep;
-    if(dt--<0){
-        dt=random(0,120);
-        dd=random(0,4);
-    }
-    switch(dd){
-      case 0: case 1:
-        v[0]+=dx*esidr;
-        v[1]+=dy*esidr;
-      break;
-      case 2:
-        v[0]+=dy*esidr;
-        v[1]-=dx*esidr;
-      break;
-      default:
-        v[0]-=dy*esidr;
-        v[1]+=dx*esidr;
-      break;
-    }
-    // keep apart from other enemies 
-    for(int e2=0;e2<ENEMIES;e2++){
-      Enemy *pE2 = pG->pEnemy[e2];
-      if(pE2!=this){
-        float dx2=q[0]-pE2->q[0];
-        float dy2=q[1]-pE2->q[1];
-        float cs=SX2WX*10.0f;
-        if(abs(dx2)<cs&&abs(dy2)<cs){
-          v[0]+=dx2*esidr;
-          v[1]+=dy2*esidr;
-        }
-      }
-    }
-    v[0]=max(vmin,min(vmax,v[0]))*vdecay;
-    v[1]=max(vmin,min(vmax,v[1]))*vdecay;
-    q[0]+=v[0];
-    q[1]+=v[1];
   }
+  // close to player 
+  float esidr = idr*vstep;
+  if(dt--<0){
+    dt=random(0,120);
+    dd=random(0,4);
+  }
+  switch(dd){
+    case 0: case 1:
+      v[0]+=dx*esidr;
+      v[1]+=dy*esidr;
+    break;
+    case 2:
+      v[0]+=dy*esidr;
+      v[1]-=dx*esidr;
+    break;
+    default:
+      v[0]-=dy*esidr;
+      v[1]+=dx*esidr;
+    break;
+  }
+  // keep apart from other enemies 
+  for(int e2=0;e2<ENEMIES;e2++){
+    Enemy *pE2 = pG->pEnemy[e2];
+    if(pE2!=this){
+      float dx2=q[0]-pE2->q[0];
+      float dy2=q[1]-pE2->q[1];
+      float cs=SX2WX*10.0f;
+      if(abs(dx2)<cs&&abs(dy2)<cs){
+        v[0]+=dx2*esidr;
+        v[1]+=dy2*esidr;
+      }
+    }
+  }
+  v[0]=max(-vmax,min(vmax,v[0]))*vdecay;
+  v[1]=max(-vmax,min(vmax,v[1]))*vdecay;
+  q[0]+=v[0];
+  q[1]+=v[1];
   //fire 
   #define FIREFRAMES (32)
   #define BULLETSPEED (0.04f)
@@ -224,7 +223,7 @@ bool Enemy::move(Game *pG){
   return isPlayerAlive;
 }
 void Enemy::respawn(Game *pG){
-  h=5;
+  h=15;
   Player *pP=pG->pPlayer;
   int r=random(0,4);
   switch(r){
@@ -293,9 +292,8 @@ void Bullet::draw(Game *pG){
 }
 // Back Ground Stars-----------------------
 void BGStar::draw(Game *pG, int l){
-  float layerscale[3]={1.0f, 0.5f, 0.25f};
-      int sy = (int)(((q[1]-pG->pCamera->q[1])*layerscale[l]-WY0+BY)*WY2SY)%SY;
-      int sx = (int)(((q[0]-pG->pCamera->q[0])*layerscale[l]-WX0+BX)*WX2SX)%SX;
+      int sy = (int)(((q[1]-pG->pCamera->q[1])/((double)l+1)-WY0+BY)*WY2SY)%SY;
+      int sx = (int)(((q[0]-pG->pCamera->q[0])/((double)l+1)-WX0+BX)*WX2SX)%SX;
       int iy = sy / 8;
       int by = sy % 8;
       pG->pA->getBuffer()[iy*WIDTH + sx] |= 1<<by;

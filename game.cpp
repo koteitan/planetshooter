@@ -3,6 +3,7 @@
 #include "common.h"
 #include "game.h"
 Game::Game(Arduboy *_pA, bool *_kp){
+  state = eGAME_STT_PLAY;
   keypressed = _kp;
   pA = _pA;
   hiscore=0;
@@ -21,13 +22,14 @@ Game::Game(Arduboy *_pA, bool *_kp){
   iDebris   = 0;
   iAnime    = 0;
   iAnimeMax = 2;
+  bullets   = 0;
   reset();
 }
 void Game::reset(void){
   for(int l=0;l<BGSTARLAYERS;l++){
     for(int s=0;s<BGSTARS;s++){
-      pBgstar[s][l]->q[0] = (float)random(0,SX-1)/(float)SX*WX+WX0;
-      pBgstar[s][l]->q[1] = (float)random(0,SY-1)/(float)SY*WY+WY0;
+      pBgstar[s][l]->q[0] = (float)random(0,SX-1)/(float)SX*WX*BGSTARLAYERS+WX0;
+      pBgstar[s][l]->q[1] = (float)random(0,SY-1)/(float)SY*WY*BGSTARLAYERS+WY0;
     }
   }
   pPlayer->q[0] = 0.0f;
@@ -42,9 +44,11 @@ void Game::reset(void){
   for(int i=0;i<ENEMIES;i++) {pEnemy [i]->respawn(this);}
   for(int i=0;i<BULLETS;i++) pBullet[i]->b=false;
   score=0;
+  iAnime=0;
+  t_died = 30;
+  state = eGAME_STT_PLAY;
   pA->clear();
   pA->display();
-  iAnime=0;
 }
 void Game::drawScore(void){
   char str [6];
@@ -64,7 +68,7 @@ void Game::loop(void){
 
   // move ------------
   pCamera->move(this);
-  pPlayer->move(this);
+  if(state==eGAME_STT_PLAY) pPlayer->move(this);
   bool isAlive = true;
   for(int i=0;i<ENEMIES;i++) isAlive &= pEnemy [i]->move(this);
   for(int i=0;i<BULLETS;i++) isAlive &= pBullet[i]->move(this);
@@ -73,7 +77,8 @@ void Game::loop(void){
 
   // draw ------------
   pA->clear();
-  pPlayer->draw(this);
+//  pCamera->draw(this);
+  if(state==eGAME_STT_PLAY) pPlayer->draw(this);
   for(int i=0;i<ENEMIES;i++) pEnemy [i]->draw(this);
   for(int i=0;i<BULLETS;i++) pBullet[i]->draw(this);
   Debri::drawAll(this);
@@ -92,7 +97,23 @@ void Game::loop(void){
   // inclement anime --------
   iAnime=(iAnime+1) % iAnimeMax;
   if(!isAlive){
-    reset();
+    state=eGAME_STT_DIED;
+    int newdebris = 10;
+    for(int n=0;n<newdebris||debris<DEBRIS;n++){
+      Debri *pD=pDebri[iDebris];
+      pD->t=20;
+      pD->v[0]=pPlayer->v[0]*0.05f+((float)random(0,200)/100.0f-1.0f)*0.02f;
+      pD->v[1]=pPlayer->v[1]*0.05f+((float)random(0,200)/100.0f-1.0f)*0.02f;
+      pD->q[0]=pPlayer->q[0];
+      pD->q[1]=pPlayer->q[1];
+      iDebris=(iDebris+1)%DEBRIS;
+      debris++;
+    }
+  }
+  if(state==eGAME_STT_DIED){
+    if(t_died--<=0){
+      reset();
+    }
   }
 }
 void Game::drawEnemyHp(){
@@ -102,21 +123,11 @@ void Game::drawEnemyHp(){
   }
 }
 void Game::drawDebug(void){
-#if 1
+#if 0
   int y=0;
   char str[10];
   pA->setCursor(0,y+=8);
-  pA->print(pCamera->q[0]);
-  pA->setCursor(0,y+=8);
-  pA->print(pCamera->q[1]);
-  pA->setCursor(0,y+=8);
-  pA->print(pPlayer->q[0]);
-  pA->setCursor(0,y+=8);
-  pA->print(pPlayer->q[1]);
-  pA->setCursor(0,y+=8);
-  pA->print(pCamera->c[0]);
-  pA->setCursor(0,y+=8);
-  pA->print(pCamera->c[1]);
+  pA->print(bullets);
 #endif
 }
 

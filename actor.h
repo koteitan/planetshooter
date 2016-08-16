@@ -18,6 +18,7 @@ class Camera{
   float v[DIMS];
   float c[DIMS];
   void move(Game *pG);
+  void draw(Game *pG);
 };
 // Player ------------------------------
 class Player{
