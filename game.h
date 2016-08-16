@@ -29,8 +29,8 @@ typedef enum{
 #endif
 #define PLAYER_SIZE_DR (5.0f) // displayed radius of player [px]
 #define PLAYER_SIZE_CR (2.0f) // collision radius of player [px]
-#define ENEMY_SIZE_DR  (5.0f) // displayed radius of enemy [px]
-#define ENEMY_SIZE_CR  (5.0f) // collision radius of enemy [px]
+#define ENEMY_SIZE_DR  (10.0f) // displayed radius of enemy [px]
+#define ENEMY_SIZE_CR  (10.0f) // collision radius of enemy [px]
 #define BULLET_SIZE_DR (2.0f) // displayed radius of bullet [px]
 #define BULLET_SIZE_CR (2.0f) // collision radius of bullet [px]
 class Game{

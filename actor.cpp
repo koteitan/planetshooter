@@ -18,8 +18,8 @@ void Camera::move(Game *pG){
     dx=0.0f;
     dy=0.0f;
   }
-  c[0] = pG->pPlayer->q[0] + dx*rate*2;
-  c[1] = pG->pPlayer->q[1] + dy*rate*1;
+  c[0] = pG->pPlayer->q[0] + dx*rate*2.0f;
+  c[1] = pG->pPlayer->q[1] + dy*rate*1.0f + 4.0f*SX2WX;
   v[0]=max(-vmax,min(vmax,(c[0]-q[0])*vstep));
   v[1]=max(-vmax,min(vmax,(c[1]-q[1])*vstep));
   q[0]+=v[0];
@@ -201,7 +201,7 @@ bool Enemy::move(Game *pG){
   q[0]+=v[0];
   q[1]+=v[1];
   //fire 
-  #define FIREFRAMES (32)
+  #define FIREFRAMES (16)
   #define BULLETSPEED (0.04f)
   float br=random(0,FIREFRAMES);
   if(br==0 && pG->bullets<BULLETS){
@@ -223,7 +223,7 @@ bool Enemy::move(Game *pG){
   return isPlayerAlive;
 }
 void Enemy::respawn(Game *pG){
-  h=15;
+  h=32;
   Player *pP=pG->pPlayer;
   int r=random(0,4);
   switch(r){
@@ -248,12 +248,11 @@ void Enemy::respawn(Game *pG){
   dd=(char)random(0,4);
 }
 void Enemy::draw(Game *pG){
-  float cs=SX2WX*ENEMY_SIZE_DR;
   float dx=q[0]-pG->pCamera->q[0];
   float dy=q[1]-pG->pCamera->q[1];
   int x=(int)(dx*WX2SX)+SX/2;
   int y=(int)(dy*WY2SY)+SY/2;
-  if(abs(dx) < WX/2-cs && abs(dy) < WY/2-cs){
+  if(abs(dx) < WX/2 && abs(dy) < WY/2){
     pG->pA->drawCircle(x,y,ENEMY_SIZE_DR,WHITE);
   }
 }
