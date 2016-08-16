@@ -1,6 +1,6 @@
 #include <Arduboy.h>
-# library version is below:
-# git co https://github.com/Arduboy/Arduboy.git 3c409fefb
+// library version is below:
+// git co https://github.com/Arduboy/Arduboy.git 3c409fefb
 
 #define SX (128)
 #define SY ( 64)
@@ -56,13 +56,16 @@ float v_player[2];          //velosity of player
 int h_player;             // hitpoint of player
 int score  =0;              // score
 int hiscore=0;              // hiscore
-float q_enemy[ENEMIES][2];  // position of enemy e
-float v_enemy[ENEMIES][2];  // velosity of enemy e
-char dd_enemy[ENEMIES]; // direction of enemy e
-char dt_enemy[ENEMIES]; // direction left time of enemy e
-char h_enemy[ENEMIES]; // hitpoint of enemy e 
-char hi_enemy;         // hitpoint displayed enemy index
-char ht_enemy;         // hitpoint displayed time
+class{
+  public:
+  float q[2]; // position of enemy e
+  float v[2]; // velosity of enemy e
+  char dd;    // direction of enemy e
+  char dt;    // direction left time of enemy e
+  char h;     // hitpoint of enemy e 
+}enemy[ENEMIES];
+char hi_enemy;    // hitpoint displayed enemy index
+char ht_enemy;    // hitpoint displayed time
 bool b_bullet[BULLETS]; // is bullet shot
 float q_bullet[BULLETS][2]; // position of bullet b
 float v_bullet[BULLETS][2]; // velosity of bullet b
@@ -124,29 +127,29 @@ void movePlayer(){
 }
 
 void respawnEnemy(int e){
-  h_enemy[e]=32;
+  enemy[e].h=32;
   int r=random(0,4);
   switch(r){
     case 0:
-      q_enemy[e][0]=(((float)random(0,65536))/65536.0f)*WX*4.0f-WX*2.0f+q_player[0];
-      q_enemy[e][1]=q_player[1]-WY;
+      enemy[e].q[0]=(((float)random(0,65536))/65536.0f)*WX*4.0f-WX*2.0f+q_player[0];
+      enemy[e].q[1]=q_player[1]-WY;
     return;
     case 1:
-      q_enemy[e][0]=(((float)random(0,65536))/65536.0f)*WX*4.0f-WX*2.0f+q_player[0];
-      q_enemy[e][1]=q_player[1]+WY;
+      enemy[e].q[0]=(((float)random(0,65536))/65536.0f)*WX*4.0f-WX*2.0f+q_player[0];
+      enemy[e].q[1]=q_player[1]+WY;
     return;
     case 2:
-      q_enemy[e][0]=q_player[0]-WX;
-      q_enemy[e][1]=(((float)random(0,65536))/65536.0f)*WY*4.0f-WY*2.0f+q_player[1];
+      enemy[e].q[0]=q_player[0]-WX;
+      enemy[e].q[1]=(((float)random(0,65536))/65536.0f)*WY*4.0f-WY*2.0f+q_player[1];
     return;
     default:
-      q_enemy[e][0]=q_player[0]+WX;
-      q_enemy[e][1]=(((float)random(0,65536))/65536.0f)*WY*4.0f-WY*2.0f+q_player[1];
+      enemy[e].q[0]=q_player[0]+WX;
+      enemy[e].q[1]=(((float)random(0,65536))/65536.0f)*WY*4.0f-WY*2.0f+q_player[1];
     return;
 
   }
-  dt_enemy[e]=(char)random(0,120);
-  dd_enemy[e]=(char)random(0,4);
+  enemy[e].dt=(char)random(0,120);
+  enemy[e].dd=(char)random(0,4);
 }
 
 void moveEnemies(){
@@ -156,8 +159,8 @@ void moveEnemies(){
     float vdecay = 0.9f;
     float vmax   = +10;
     float vmin   = -10;
-    float dx = q_player[0]-q_enemy[e][0];
-    float dy = q_player[1]-q_enemy[e][1];
+    float dx = q_player[0]-enemy[e].q[0];
+    float dy = q_player[1]-enemy[e].q[1];
     float dr   = sqrt(dx*dx+dy*dy);
     float idr  = 1.0f/dr;
     if(abs(dx)>WX*1.1||abs(dy)>WY*1.1){
@@ -172,40 +175,40 @@ void moveEnemies(){
       }
       // close to player ----------
       float esidr = idr*vstep;
-      if(dt_enemy[e]--<0){
-        dt_enemy[e]=random(0,120);
-        dd_enemy[e]=random(0,4);
+      if(enemy[e].dt--<0){
+        enemy[e].dt=random(0,120);
+        enemy[e].dd=random(0,4);
       }
-      switch(dd_enemy[e]){
+      switch(enemy[e].dd){
         case 0: case 1:
-        v_enemy[e][0]+=dx*esidr;
-        v_enemy[e][1]+=dy*esidr;
+        enemy[e].v[0]+=dx*esidr;
+        enemy[e].v[1]+=dy*esidr;
         break;
         case 2:
-        v_enemy[e][0]+=dy*esidr;
-        v_enemy[e][1]-=dx*esidr;
+        enemy[e].v[0]+=dy*esidr;
+        enemy[e].v[1]-=dx*esidr;
         break;
         default:
-        v_enemy[e][0]-=dy*esidr;
-        v_enemy[e][1]+=dx*esidr;
+        enemy[e].v[0]-=dy*esidr;
+        enemy[e].v[1]+=dx*esidr;
         break;
       }
       // keep apart from other enemies ------------
       for(int e2=0;e2<ENEMIES;e2++){
         if(e2!=e){
-          float dx2=q_enemy[e][0]-q_enemy[e2][0];
-          float dy2=q_enemy[e][1]-q_enemy[e2][1];
+          float dx2=enemy[e].q[0]-enemy[e2].q[0];
+          float dy2=enemy[e].q[1]-enemy[e2].q[1];
           float cs=SX2WX*10.0f;
           if(abs(dx2)<cs&&abs(dy2)<cs){
-            v_enemy[e][0]+=dx2*esidr;
-            v_enemy[e][1]+=dy2*esidr;
+            enemy[e].v[0]+=dx2*esidr;
+            enemy[e].v[1]+=dy2*esidr;
           }
         }
       }
-      v_enemy[e][0]=max(vmin,min(vmax,v_enemy[e][0]))*vdecay;
-      v_enemy[e][1]=max(vmin,min(vmax,v_enemy[e][1]))*vdecay;
-      q_enemy[e][0]+=v_enemy[e][0];
-      q_enemy[e][1]+=v_enemy[e][1];
+      enemy[e].v[0]=max(vmin,min(vmax,enemy[e].v[0]))*vdecay;
+      enemy[e].v[1]=max(vmin,min(vmax,enemy[e].v[1]))*vdecay;
+      enemy[e].q[0]+=enemy[e].v[0];
+      enemy[e].q[1]+=enemy[e].v[1];
     }
     //fire -----------------
 #define FIREFRAMES (32)
@@ -217,8 +220,8 @@ void moveEnemies(){
         if(!b_bullet[b]) break;
       }
       b_bullet[b]=true;
-      q_bullet[b][0]=q_enemy[e][0];
-      q_bullet[b][1]=q_enemy[e][1];
+      q_bullet[b][0]=enemy[e].q[0];
+      q_bullet[b][1]=enemy[e].q[1];
       float bsidr = idr*BULLETSPEED;
       v_bullet[b][0]=dx*bsidr;
       v_bullet[b][1]=dy*bsidr;
@@ -229,16 +232,16 @@ void moveShot(){
   if(t_shot>0){
     t_shot--;
     for(int e=0;e<ENEMIES;e++){
-      float dx=q_enemy[e][0]-q_player[0]; // E-P
-      float dy=q_enemy[e][1]-q_player[1]; // E-P
+      float dx=enemy[e].q[0]-q_player[0]; // E-P
+      float dy=enemy[e].q[1]-q_player[1]; // E-P
       float s=d_shot[0]*dx + d_shot[1]*dy; // s = D(E-P)'/|D| = D(E-P)'
       dx -= s*d_shot[0]; // (E-P)-sD = E-(P+sD)
       dy -= s*d_shot[1]; // (E-P)-sD = E-(P+sD)
       float dr=sqrt(dx*dx+dy*dy);
       if(dr<ENEMY_SIZE_CR*SX2WX && s>0){
-        h_enemy[e]--;
+        enemy[e].h--;
         char newdebris;
-        if(h_enemy[e]>0){
+        if(enemy[e].h>0){
           ht_enemy=60;
           hi_enemy=e;
           newdebris=1;
@@ -254,8 +257,8 @@ void moveShot(){
           t_debri[i_debris]=20;
           v_debri[i_debris][0]=d_shot[0]*0.05f+((float)random(0,200)/100.0f-1.0f)*0.02f;
           v_debri[i_debris][1]=d_shot[1]*0.05f+((float)random(0,200)/100.0f-1.0f)*0.02f;
-          q_debri[i_debris][0]=q_enemy[e][0];
-          q_debri[i_debris][1]=q_enemy[e][1];
+          q_debri[i_debris][0]=enemy[e].q[0];
+          q_debri[i_debris][1]=enemy[e].q[1];
           i_debris=(i_debris+1)%DEBRIS;
           debris++;
         }
@@ -329,8 +332,8 @@ void drawEnemies(){
   // draw enemies---------
   for(int e=0;e<ENEMIES;e++){
     float cs=SX2WX*ENEMY_SIZE_DR;
-    float dx=q_enemy[e][0]-q_player[0];
-    float dy=q_enemy[e][1]-q_player[1];
+    float dx=enemy[e].q[0]-q_player[0];
+    float dy=enemy[e].q[1]-q_player[1];
     if(abs(dx) < WX/2-cs && abs(dy) < WY/2-cs){
       arduboy.drawCircle((int)(dx*WX2SX)+SX/2,(int)(dy*WY2SY)+SY/2,ENEMY_SIZE_DR,WHITE);
     }
@@ -362,7 +365,7 @@ void drawShot(){
 void drawHp(){
   arduboy.drawLine(0,SY-1,h_player,SY-1,WHITE);
   if(ht_enemy>0){
-    arduboy.drawLine(0,SY-3,h_enemy[hi_enemy],SY-3,WHITE);
+    arduboy.drawLine(0,SY-3,enemy[hi_enemy].h,SY-3,WHITE);
     ht_enemy--;
   }
 }
