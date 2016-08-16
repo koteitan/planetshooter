@@ -206,7 +206,6 @@ void Enemy::respawn(Game *pG){
       q[0]=pP->q[0]+WX;
       q[1]=(((float)random(0,65536))/65536.0f)*WY*4.0f-WY*2.0f+pP->q[1];
     return;
-
   }
   dt=(char)random(0,120);
   dd=(char)random(0,4);
@@ -263,8 +262,10 @@ void Shot::draw(Game *pG){
   }
 }
 //Debri ---------------------------
-char Debri::i=0;
-char Debri::debris=0;
+void Debri::init(Game *pG){
+  pG->iDebris=0;
+  pG->debris =0;
+}
 void Debri::moveAll(Game *pG){
   for(int n=0;n<pG->debris;n++){
     int d=(pG->iDebris+n)%DEBRIS;
@@ -272,8 +273,8 @@ void Debri::moveAll(Game *pG){
   };
 }
 void Debri::drawAll(Game * pG){
-  for(int n=0;n<Debri::debris;n++){
-    int d=(Debri::i+n)%DEBRIS;
+  for(int n=0;n<pG->debris;n++){
+    int d=(pG->iDebris+n)%DEBRIS;
     pG->pDebri[d]->draw(pG);
   };
 }
@@ -284,8 +285,8 @@ void Debri::move(Game *pG){
   v[1]*=0.95;
   t--;
   if(t==0){
-    Debri::i=(Debri::i+1)%DEBRIS;
-    Debri::debris--;
+    pG->iDebris=(pG->iDebris+1)%DEBRIS;
+    pG->debris--;
   }
 }
 void Debri::draw(Game *pG){

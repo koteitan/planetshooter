@@ -1,3 +1,4 @@
+#undef DEBUG
 #include <Arduboy.h>
 #include "common.h"
 #include "game.h"
@@ -5,7 +6,6 @@ Game::Game(Arduboy *_pA, bool *_kp){
   keypressed = _kp;
   pA = _pA;
   hiscore=0;
-  reset();
   pPlayer = new Player();
   pShot   = new Shot  ();
   for(int i=0;i<ENEMIES;i++) pEnemy [i]=new Enemy ();
@@ -20,6 +20,7 @@ Game::Game(Arduboy *_pA, bool *_kp){
   iDebris   = 0;
   iAnime    = 0;
   iAnimeMax = 2;
+  reset();
 }
 void Game::reset(void){
   for(int l=0;l<BGSTARLAYERS;l++){
@@ -33,8 +34,8 @@ void Game::reset(void){
   pPlayer->v[0] = 0.0f;
   pPlayer->v[1] = 0.0f;
   pPlayer->h = 127;
+  for(int i=0;i<ENEMIES;i++) {pEnemy [i]->respawn(this);}
   for(int i=0;i<BULLETS;i++) pBullet[i]->b=false;
-  for(int i=0;i<ENEMIES;i++) pEnemy [i]->respawn(this);
   score=0;
   pA->clear();
   pA->display();
@@ -47,8 +48,9 @@ void Game::drawScore(void){
 void Game::loop(void){
   // move ------------
   pPlayer->move(this);
-  for(int i=0;i<ENEMIES;i++) pEnemy [i]->move(this);
-  for(int i=0;i<BULLETS;i++) pBullet[i]->move(this);
+  bool isAlive = true;
+  for(int i=0;i<ENEMIES;i++) isAlive &= pEnemy [i]->move(this);
+  for(int i=0;i<BULLETS;i++) isAlive &= pBullet[i]->move(this);
   pShot->move(this);
   Debri::moveAll(this);
   // draw ------------
@@ -65,17 +67,30 @@ void Game::loop(void){
     }
   }
   pPlayer->drawHp(this);
-  if(tEnemyHp>0){
-    pA->drawLine(0,SY-3,pEnemy[iEnemyHp]->h,SY-3,WHITE);
-    iEnemyHp--;
-  }
+  drawEnemyHp();
 //  drawDebug();// debug
   pA->display();
   // inclement anime
   iAnime=(iAnime+1) % iAnimeMax;
+  if(!isAlive){
+    reset();
+  }
 }
-void drawDebug(Arduboy *pA){
-#if 1
+void Game::drawEnemyHp(){
+  if(tEnemyHp>0){
+    pA->drawLine(0,SY-3,pEnemy[iEnemyHp]->h,SY-3,WHITE);
+    iEnemyHp--;
+  }
+}
+void Game::drawDebug(void){
+#ifdef DEBUG
+  int y=0;
+  pA->setCursor(0,y+=8);
+  pA->print(String((long)pEnemy[0])+" "+String(fDebug[0]));
+  pA->setCursor(0,y+=8);
+  pA->print(String((long)pEnemy[1])+" "+String(fDebug[1]));
+  pA->setCursor(0,y+=8);
+  pA->print(String((long)pEnemy[2])+" "+String(fDebug[2]));
 #endif
 }
 

@@ -8,11 +8,19 @@ class Bullet;
 class Shot;
 class BackGroundStar;
 class Debri;
+#if 0
 #define BGSTARS      (10) // number of background stars
 #define BGSTARLAYERS ( 3) // number of background star layers
 #define ENEMIES      ( 6) // number of enemies
 #define BULLETS      (10) // max number of bullets 
 #define DEBRIS       (20) // max number of debris
+#else
+#define BGSTARS      ( 1) // number of background stars
+#define BGSTARLAYERS ( 3) // number of background star layers
+#define ENEMIES      ( 3) // number of enemies
+#define BULLETS      ( 1) // max number of bullets 
+#define DEBRIS       (10) // max number of debris
+#endif
 #define PLAYER_SIZE_DR (5.0f) // displayed radius of player [px]
 #define PLAYER_SIZE_CR (2.0f) // collision radius of player [px]
 #define ENEMY_SIZE_DR  (5.0f) // displayed radius of enemy [px]
@@ -39,10 +47,13 @@ class Game{
   int iDebris;
   int iAnime;
   int iAnimeMax;
- 
   Game(Arduboy *_pA, bool *_kp);
   void reset    (void);
   void drawScore(void);
   void loop     (void);
   void drawDebug(void);
+  void drawEnemyHp(void);
+#ifdef DEBUG
+  float fDebug[10];
+#endif
 };

@@ -13,9 +13,7 @@ Arduboy *pA = new Arduboy();
 
 int bullets = 0;        //     number of bullets now
 int frame_rate  = 60;  // frames/sec
-float q_bgstar[DIMS][BGSTARS][BGSTARLAYERS]; // position of bg stars
 Game *pGame;
-
 
 void setup(){
   pA->beginNoLogo();

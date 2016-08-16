@@ -28,8 +28,6 @@ class Enemy{
   char dd;       // direction
   char dt;       // direction left time
   char h;        // hitpoint
-  static char hi; // hitpoint displayed enemy index
-  static char ht; // hitpoint displayed time
   bool move(Game *pG);      // move with player p / returns if player is alive
   void draw(Game *pG);      // draw
   void respawn(Game *pG);   // respawn
@@ -60,7 +58,7 @@ class Debri{
   float q[DIMS];
   float v[DIMS];
   char t;
-  void init(void);
+  void init(Game *pG);
   void move(Game *pG);
   void draw(Game *pG);
 
