@@ -1,4 +1,7 @@
 #include <Arduboy.h>
+# library version is below:
+# git co https://github.com/Arduboy/Arduboy.git 3c409fefb
+
 #define SX (128)
 #define SY ( 64)
 /* world coodinate:
@@ -33,7 +36,6 @@ int curkeys = 0;
 int button[KEYS]={ LEFT_BUTTON, RIGHT_BUTTON, UP_BUTTON, DOWN_BUTTON, A_BUTTON, B_BUTTON};
 boolean keypressed[KEYS];
 Arduboy arduboy;
-AbPrinter text(arduboy);
 
 #define BGSTARS      (10) // number of background stars
 #define BGSTARLAYERS ( 3) // number of background star layers
@@ -76,7 +78,7 @@ char i_anime=0;
 char i_anime_max=2;
 
 void setup(){
-  arduboy.begin();
+  arduboy.beginNoLogo();
   arduboy.initRandomSeed();
   vram = arduboy.getBuffer();
   initGame();
@@ -358,9 +360,9 @@ void drawShot(){
   }
 }
 void drawHp(){
-  arduboy.drawLine(0,0,h_player,0,WHITE);
+  arduboy.drawLine(0,SY-1,h_player,SY-1,WHITE);
   if(ht_enemy>0){
-    arduboy.drawLine(0,3,h_enemy[hi_enemy],3,WHITE);
+    arduboy.drawLine(0,SY-3,h_enemy[hi_enemy],SY-3,WHITE);
     ht_enemy--;
   }
 }
@@ -414,8 +416,8 @@ String ralign(int i, int n){
 }
 
 void drawScore(){
-  text.setCursor(0,SY-8);
-  text.print("SCORE:"+ralign(score,5)+" HI:"+ralign(hiscore,5));
+  arduboy.setCursor(0,SY-8-3);
+  arduboy.print("SCORE:"+ralign(score,5)+" HI:"+ralign(hiscore,5));
 }
 void drawDebug(){
 #if 1
