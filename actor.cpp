@@ -6,7 +6,7 @@
 void Camera::move(Game *pG){
   float rate   = 0.5f;
   float vmax   = 1.0f;
-  float vstep  = 0.1f;
+  float vstep  = 0.2f;
   float dx = pG->pPlayer->v[0];
   float dy = pG->pPlayer->v[1];
   float r2 = dx*dx+dy*dy;
@@ -33,8 +33,8 @@ void Camera::draw(Game *pG){
 }
 //Player --------------------------------------
 void Player::move(Game *pG){
-  float vstep  = 0.008f;
-  float vdecay = 0.9f;
+  float vstep  = 0.016f;
+  float vdecay = 0.8f;
   float vmax   = +10;
   if(pG->keypressed[KEY_XM]){v[0]+= -vstep;}
   if(pG->keypressed[KEY_XP]){v[0]+= +vstep;}
@@ -80,6 +80,7 @@ void Player::drawHp(Game *pG){
 }
 //Shot----------------------------------------
 void Shot::move(Game *pG){
+  float knockback = 0.6f; // enemy knockback
   Player *pP = pG->pPlayer;
   if(t>0){
     t--;
@@ -97,31 +98,32 @@ void Shot::move(Game *pG){
         if(pE->h>0){
           pG->tEnemyHp=60;
           pG->iEnemyHp=e;
-          newdebris=1;
-          pE->v[0]+=dx*0.03f;
-          pE->v[1]+=dy*0.03f;
+          newdebris=2;
+          pE->v[0]+=dx*knockback;
+          pE->v[1]+=dy*knockback;
         }else{
           //enemy dies
           pG->score+=100;
           pG->hiscore=max(pG->score,pG->hiscore);
           pE->respawn(pG);
           pG->tEnemyHp=0;
-          newdebris=3;
+          pG->iEnemyHp=ENEMIES;
+          newdebris=4;
         }
         for(int n=0;n<newdebris||pG->debris<DEBRIS;n++){
           Debri *pD=pG->pDebri[pG->iDebris];
           pD->t=20;
           pD->v[0]=d[0]*0.05f+((float)random(0,200)/100.0f-1.0f)*0.02f;
           pD->v[1]=d[1]*0.05f+((float)random(0,200)/100.0f-1.0f)*0.02f;
-          pD->q[0]=pE->q[0];
-          pD->q[1]=pE->q[1];
+          pD->q[0]=pE->q[0]-cx;
+          pD->q[1]=pE->q[1]-cy;
           pG->iDebris=(pG->iDebris+1)%DEBRIS;
           pG->debris++;
         }
       }
     }
   }else{
-    if(pG->keypressed[KEY_A]){
+    if(pG->keypressed[KEY_A] && pG->state!=eGAME_STT_DIED){
       d[0]=pP->v[0];
       d[1]=pP->v[1];
       float idr=1.0f/sqrt(d[0]*d[0]+d[1]*d[1]);
@@ -149,7 +151,7 @@ void Shot::draw(Game *pG){
 //Enemy ----------------------------------------
 bool Enemy::move(Game *pG){
   bool isPlayerAlive=true;
-  float vstep  = 0.002f;
+  float vstep  = 0.004f;
   float vdecay = 0.9f;
   float vmax   = +0.01f;
   float dx = pG->pPlayer->q[0]-q[0];
@@ -163,24 +165,28 @@ bool Enemy::move(Game *pG){
       isPlayerAlive = false;
     }
   }
+  // respawn at far
+  if(abs(dx)>WX*3.0f||abs(dy)>WY*3.0f){
+    respawn(pG);
+  }
   // close to player 
   float esidr = idr*vstep;
   if(dt--<0){
     dt=random(0,120);
-    dd=random(0,4);
+    dd=random(0,6);
   }
   switch(dd){
-    case 0: case 1:
-      v[0]+=dx*esidr;
-      v[1]+=dy*esidr;
+    case 1: // right angle to Player
+      v[0]-=dy*esidr;
+      v[1]+=dx*esidr;
     break;
-    case 2:
+    case 0: // right angle to Player
       v[0]+=dy*esidr;
       v[1]-=dx*esidr;
     break;
-    default:
-      v[0]-=dy*esidr;
-      v[1]+=dx*esidr;
+    default: // close to Player
+      v[0]+=dx*esidr;
+      v[1]+=dy*esidr;
     break;
   }
   // keep apart from other enemies 
@@ -201,8 +207,8 @@ bool Enemy::move(Game *pG){
   q[0]+=v[0];
   q[1]+=v[1];
   //fire 
-  #define FIREFRAMES (16)
-  #define BULLETSPEED (0.04f)
+  #define FIREFRAMES (64)
+  #define BULLETSPEED (0.08f)
   float br=random(0,FIREFRAMES);
   if(br==0 && pG->bullets<BULLETS){
     int i=0;
@@ -229,18 +235,18 @@ void Enemy::respawn(Game *pG){
   switch(r){
     case 0:
       q[0]=(((float)random(0,65536))/65536.0f)*WX*4.0f-WX*2.0f+pP->q[0];
-      q[1]=pP->q[1]-WY;
+      q[1]=pP->q[1]-WY*2.0f;
     return;
     case 1:
       q[0]=(((float)random(0,65536))/65536.0f)*WX*4.0f-WX*2.0f+pP->q[0];
-      q[1]=pP->q[1]+WY;
+      q[1]=pP->q[1]+WY*2.0f;
     return;
     case 2:
-      q[0]=pP->q[0]-WX;
+      q[0]=pP->q[0]-WX*2.0f;
       q[1]=(((float)random(0,65536))/65536.0f)*WY*4.0f-WY*2.0f+pP->q[1];
     return;
     default:
-      q[0]=pP->q[0]+WX;
+      q[0]=pP->q[0]+WX*2.0f;
       q[1]=(((float)random(0,65536))/65536.0f)*WY*4.0f-WY*2.0f+pP->q[1];
     return;
   }

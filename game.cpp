@@ -119,7 +119,7 @@ void Game::loop(void){
 void Game::drawEnemyHp(){
   if(tEnemyHp>0){
     pA->drawLine(0,SY-3,pEnemy[iEnemyHp]->h,SY-3,WHITE);
-    iEnemyHp--;
+    tEnemyHp--;
   }
 }
 void Game::drawDebug(void){
