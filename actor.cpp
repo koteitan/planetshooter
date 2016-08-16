@@ -4,9 +4,9 @@
 #include "actor.h"
 //Camera --------------------------------------
 void Camera::move(Game *pG){
-  float rate   = 0.5f;
+  float rate   = 0.75f;
   float vmax   = 1.0f;
-  float vstep  = 0.2f;
+  float vstep  = 0.15f;
   float dx = pG->pPlayer->v[0];
   float dy = pG->pPlayer->v[1];
   float r2 = dx*dx+dy*dy;
@@ -33,7 +33,7 @@ void Camera::draw(Game *pG){
 }
 //Player --------------------------------------
 void Player::move(Game *pG){
-  float vstep  = 0.016f;
+  float vstep  = 0.012f;
   float vdecay = 0.8f;
   float vmax   = +10;
   if(pG->keypressed[KEY_XM]){v[0]+= -vstep;}
@@ -103,8 +103,7 @@ void Shot::move(Game *pG){
           pE->v[1]+=dy*knockback;
         }else{
           //enemy dies
-          pG->score+=100;
-          pG->hiscore=max(pG->score,pG->hiscore);
+          pG->score += 100;
           pE->respawn(pG);
           pG->tEnemyHp=0;
           pG->iEnemyHp=ENEMIES;

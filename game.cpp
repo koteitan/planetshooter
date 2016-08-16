@@ -16,13 +16,8 @@ Game::Game(Arduboy *_pA, bool *_kp){
   for(int l=0;l<BGSTARLAYERS;l++){
     for(int s=0;s<BGSTARS;s++) pBgstar[s][l] = new BGStar();
   }
-  tEnemyHp  = 0;
-  iEnemyHp  = 0;
-  debris    = 0;
-  iDebris   = 0;
   iAnime    = 0;
   iAnimeMax = 2;
-  bullets   = 0;
   reset();
 }
 void Game::reset(void){
@@ -43,10 +38,16 @@ void Game::reset(void){
   pPlayer->h = 127;
   for(int i=0;i<ENEMIES;i++) {pEnemy [i]->respawn(this);}
   for(int i=0;i<BULLETS;i++) pBullet[i]->b=false;
-  score=0;
-  iAnime=0;
+  tEnemyHp  = 0;
+  iEnemyHp  = 0;
+  debris    = 0;
+  iDebris   = 0;
+  bullets   = 0;
+
+  score = 0;
   t_died = 30;
   state = eGAME_STT_PLAY;
+
   pA->clear();
   pA->display();
 }
@@ -61,7 +62,7 @@ void Game::drawScore(void){
   pA->setCursor(12*6,SY-8-3);
   pA->print("HI:");
   pA->setCursor(15*6,SY-8-3);
-  sprintf(str, "% 5d",score);
+  sprintf(str, "% 5d",hiscore);
   pA->print(str);
 }
 void Game::loop(void){
@@ -74,6 +75,9 @@ void Game::loop(void){
   for(int i=0;i<BULLETS;i++) isAlive &= pBullet[i]->move(this);
   pShot->move(this);
   Debri::moveAll(this);
+
+  // score
+  hiscore = max(score, hiscore);
 
   // draw ------------
   pA->clear();

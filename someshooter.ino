@@ -11,7 +11,6 @@ int button[KEYS]={ LEFT_BUTTON, RIGHT_BUTTON, UP_BUTTON, DOWN_BUTTON, A_BUTTON, 
 bool keypressed[KEYS];
 Arduboy *pA = new Arduboy();
 
-int bullets = 0;        //     number of bullets now
 int frame_rate  = 60;  // frames/sec
 Game *pGame;
 
