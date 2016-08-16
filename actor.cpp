@@ -2,49 +2,81 @@
 #include "common.h"
 #include "game.h"
 #include "actor.h"
-//BGStars ---------------------------
+//Camera --------------------------------------
+void Camera::move(Game *pG){
+  float rate   = 0.5f;
+  float vmax   = 1.0f;
+  float vstep  = 0.1f;
+  float dx = pG->pPlayer->v[0];
+  float dy = pG->pPlayer->v[1];
+  float r2 = dx*dx+dy*dy;
+  if(r2>10e-10){
+    r2=1.0f/sqrt(r2);
+    dx=dx*r2;
+    dy=dy*r2;
+  }else{
+    dx=0.0f;
+    dy=0.0f;
+  }
+  c[0] = pG->pPlayer->q[0] + dx*rate*SX2WX;
+  c[1] = pG->pPlayer->q[1] + dy*rate*SY2WY/2;
+  v[0]=max(-vmax,min(vmax,(c[0]-q[0])*vstep));
+  v[1]=max(-vmax,min(vmax,(c[1]-q[1])*vstep));
+  q[0]+=v[0];
+  q[1]+=v[1];
+}
 //Player --------------------------------------
 void Player::move(Game *pG){
   float vstep  = 0.008f;
   float vdecay = 0.9f;
   float vmax   = +10;
-  float vmin   = -10;
   if(pG->keypressed[KEY_XM]){v[0]+= -vstep;}
   if(pG->keypressed[KEY_XP]){v[0]+= +vstep;}
   if(pG->keypressed[KEY_YM]){v[1]+= -vstep;}
   if(pG->keypressed[KEY_YP]){v[1]+= +vstep;}
-  v[0]=max(vmin,min(vmax,v[0]))*vdecay;
-  v[1]=max(vmin,min(vmax,v[1]))*vdecay;
+  v[0]=max(-vmax,min(vmax,v[0]))*vdecay;
+  v[1]=max(-vmax,min(vmax,v[1]))*vdecay;
   q[0]=max(BX0,min(BX1,q[0]+v[0]));
   q[1]=max(BY0,min(BY1,q[1]+v[1]));
-  float dx,dy,ivr;
-  ivr=1.0f/sqrt(v[0]*v[0]+v[1]*v[1]);
-  dx=v[0]*ivr;
-  dy=v[1]*ivr;
 }
 void Player::draw(Game *pG){
-  float ivr=1.0f/sqrt(v[0]*v[0]+v[1]*v[1]);
-  float dx=v[0]*ivr;
-  float dy=v[1]*ivr;
+  int cx = pG->pCamera->q[0]*WX2SX;
+  int cy = pG->pCamera->q[1]*WY2SY;
+  int cx2 = pG->pCamera->c[0]*WX2SX;
+  int cy2 = pG->pCamera->c[1]*WY2SY;
+  int px = pG->pPlayer->q[0]*WX2SX;
+  int py = pG->pPlayer->q[1]*WY2SY;
+  float ivr=sqrt(v[0]*v[0]+v[1]*v[1]);
+  float dx,dy;
+  if(ivr>10e-10){
+    ivr = 1.0f/ivr;
+    dx=v[0]*ivr;
+    dy=v[1]*ivr;
+  }else{
+    dx =+1;
+    dy = 0;
+  }
   float cosm = cos((180.0f-60.0f)/180.0f*PI);
   float cosp = cos((180.0f+60.0f)/180.0f*PI);
   float sinm = sin((180.0f-60.0f)/180.0f*PI);
   float sinp = sin((180.0f+60.0f)/180.0f*PI);
-  int x0=SX/2;
-  int y0=SY/2;
-  int x1=SX/2+(int)(dx*5.0f);
-  int y1=SY/2+(int)(dy*5.0f);
-  int x2=SX/2+(int)((cosm*dx-sinm*dy)*5.0f);
-  int y2=SY/2+(int)((sinm*dx+cosm*dy)*5.0f);
-  int x3=SX/2+(int)((cosp*dx-sinp*dy)*5.0f);
-  int y3=SY/2+(int)((sinp*dx+cosp*dy)*5.0f);
+  int x0=SX/2                              +(px-cx);
+  int y0=SY/2                              +(py-cy);
+  int x1=SX/2+(int)(dx*5.0f)               +(px-cx);
+  int y1=SY/2+(int)(dy*5.0f)               +(py-cy);
+  int x2=SX/2+(int)((cosm*dx-sinm*dy)*5.0f)+(px-cx);
+  int y2=SY/2+(int)((sinm*dx+cosm*dy)*5.0f)+(py-cy);
+  int x3=SX/2+(int)((cosp*dx-sinp*dy)*5.0f)+(px-cx);
+  int y3=SY/2+(int)((sinp*dx+cosp*dy)*5.0f)+(py-cy);
   pG->pA->fillTriangle(x0,y0,x1,y1,x2,y2,WHITE);
   pG->pA->fillTriangle(x0,y0,x1,y1,x3,y3,WHITE);
+  pG->pA->drawLine(SX/2+cx2-cx-2,SY/2+cy2-cy-2,SX/2+cx2-cx+2,SY/2+cy2-cy+2,WHITE);
+  pG->pA->drawLine(SX/2+cx2-cx-2,SY/2+cy2-cy+2,SX/2+cx2-cx+2,SY/2+cy2-cy-2,WHITE);
 }
 void Player::drawHp(Game *pG){
   pG->pA->drawLine(0,SY-1,h,SY-1,WHITE);
 }
-//shot----------------------------------------
+//Shot----------------------------------------
 void Shot::move(Game *pG){
   Player *pP = pG->pPlayer;
   if(t>0){
@@ -98,12 +130,16 @@ void Shot::move(Game *pG){
 }
 void Shot::draw(Game *pG){
   if(t){
+    int px = pG->pPlayer->q[0]*WX2SX;
+    int py = pG->pPlayer->q[1]*WY2SY;
+    int cx = pG->pCamera->q[0]*WX2SX;
+    int cy = pG->pCamera->q[1]*WY2SY;
     int dx=(int)(d[0]*(float)SX/6);
     int dy=(int)(d[1]*(float)SY/6);
-    pG->pA->drawLine(SX/2+dx*(dp+0),
-                     SY/2+dy*(dp+0),
-                     SX/2+dx*(dp+1),
-                     SY/2+dy*(dp+1),WHITE);
+    pG->pA->drawLine(SX/2+dx*(dp+0)+(px-cx),
+                     SY/2+dy*(dp+0)+(py-cy),
+                     SX/2+dx*(dp+1)+(px-cx),
+                     SY/2+dy*(dp+1)+(py-cy),WHITE);
   }
 }
 //Enemy ----------------------------------------
@@ -214,10 +250,12 @@ void Enemy::respawn(Game *pG){
 }
 void Enemy::draw(Game *pG){
   float cs=SX2WX*ENEMY_SIZE_DR;
-  float dx=q[0]-pG->pPlayer->q[0];
-  float dy=q[1]-pG->pPlayer->q[1];
+  float dx=q[0]-pG->pCamera->q[0];
+  float dy=q[1]-pG->pCamera->q[1];
+  int x=(int)(dx*WX2SX)+SX/2;
+  int y=(int)(dy*WY2SY)+SY/2;
   if(abs(dx) < WX/2-cs && abs(dy) < WY/2-cs){
-    pG->pA->drawCircle((int)(dx*WX2SX)+SX/2,(int)(dy*WY2SY)+SY/2,ENEMY_SIZE_DR,WHITE);
+    pG->pA->drawCircle(x,y,ENEMY_SIZE_DR,WHITE);
   }
 }
 //Bullet ----------------------------------
@@ -244,18 +282,20 @@ bool Bullet::move(Game *pG){
 void Bullet::draw(Game *pG){
   if(b){
     float cs=SX2WX*BULLET_SIZE_DR;
-    float dx=q[0]-pG->pPlayer->q[0];
-    float dy=q[1]-pG->pPlayer->q[1];
+    float dx=q[0]-pG->pCamera->q[0];
+    float dy=q[1]-pG->pCamera->q[1];
     if(abs(dx) < WX/2-cs && abs(dy) < WY/2-cs){
-      pG->pA->drawCircle((int)(dx*WX2SX)+SX/2,(int)(dy*WY2SY)+SY/2,BULLET_SIZE_DR-pG->iAnime,WHITE);
+      int x=(int)(dx*WX2SX)+SX/2;
+      int y=(int)(dy*WY2SY)+SY/2;
+      pG->pA->drawCircle(x,y,BULLET_SIZE_DR-pG->iAnime,WHITE);
     }
   }
 }
 // Back Ground Stars-----------------------
 void BGStar::draw(Game *pG, int l){
   float layerscale[3]={1.0f, 0.5f, 0.25f};
-      int sy = (int)((q[1]-pG->pPlayer->q[1]*layerscale[l]-WY0+BY)*WY2SY)%SY;
-      int sx = (int)((q[0]-pG->pPlayer->q[0]*layerscale[l]-WX0+BX)*WX2SX)%SX;
+      int sy = (int)(((q[1]-pG->pCamera->q[1])*layerscale[l]-WY0+BY)*WY2SY)%SY;
+      int sx = (int)(((q[0]-pG->pCamera->q[0])*layerscale[l]-WX0+BX)*WX2SX)%SX;
       int iy = sy / 8;
       int by = sy % 8;
       pG->pA->getBuffer()[iy*WIDTH + sx] |= 1<<by;
@@ -289,8 +329,8 @@ void Debri::move(Game *pG){
   }
 }
 void Debri::draw(Game *pG){
-  float dx=q[0]-pG->pPlayer->q[0];
-  float dy=q[1]-pG->pPlayer->q[1];
+  float dx=q[0]-pG->pCamera->q[0];
+  float dy=q[1]-pG->pCamera->q[1];
   if(abs(dx)<WX && abs(dy)<WY){
     pG->pA->drawPixel(dx*WX2SX+SX/2,dy*WY2SY+SY/2,WHITE);
   }

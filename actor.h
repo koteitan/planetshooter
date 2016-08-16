@@ -3,6 +3,7 @@
 #include "game.h"
 class Game;
 // player -------------------------------
+class Camera;
 class Player;
 class Enemy;
 class Bullet;
@@ -10,6 +11,14 @@ class Shot;
 class BackGroundStar;
 class Debri;
 
+// Camera ------------------------------
+class Camera{
+  public:
+  float q[DIMS];
+  float v[DIMS];
+  float c[DIMS];
+  void move(Game *pG);
+};
 // Player ------------------------------
 class Player{
   public:

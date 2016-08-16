@@ -6,6 +6,7 @@ Game::Game(Arduboy *_pA, bool *_kp){
   keypressed = _kp;
   pA = _pA;
   hiscore=0;
+  pCamera = new Camera();
   pPlayer = new Player();
   pShot   = new Shot  ();
   for(int i=0;i<ENEMIES;i++) pEnemy [i]=new Enemy ();
@@ -31,8 +32,12 @@ void Game::reset(void){
   }
   pPlayer->q[0] = 0.0f;
   pPlayer->q[1] = 0.0f;
+  pCamera->q[0] = pPlayer->q[0];
+  pCamera->q[1] = pPlayer->q[1];
   pPlayer->v[0] = 0.0f;
   pPlayer->v[1] = 0.0f;
+  pCamera->v[0] = 0.0f;
+  pCamera->v[1] = 0.0f;
   pPlayer->h = 127;
   for(int i=0;i<ENEMIES;i++) {pEnemy [i]->respawn(this);}
   for(int i=0;i<BULLETS;i++) pBullet[i]->b=false;
@@ -56,13 +61,16 @@ void Game::drawScore(void){
   pA->print(str);
 }
 void Game::loop(void){
+
   // move ------------
+  pCamera->move(this);
   pPlayer->move(this);
   bool isAlive = true;
   for(int i=0;i<ENEMIES;i++) isAlive &= pEnemy [i]->move(this);
   for(int i=0;i<BULLETS;i++) isAlive &= pBullet[i]->move(this);
   pShot->move(this);
   Debri::moveAll(this);
+
   // draw ------------
   pA->clear();
   pPlayer->draw(this);
@@ -77,7 +85,7 @@ void Game::loop(void){
   }
   pPlayer->drawHp(this);
   drawEnemyHp();
-//  drawDebug();// debug
+  drawDebug();// debug
   drawScore();
   pA->display();
 
@@ -94,14 +102,21 @@ void Game::drawEnemyHp(){
   }
 }
 void Game::drawDebug(void){
-#ifdef DEBUG
+#if 1
   int y=0;
+  char str[10];
   pA->setCursor(0,y+=8);
-  pA->print(String((long)pEnemy[0])+" "+String(fDebug[0]));
+  pA->print(pCamera->q[0]);
   pA->setCursor(0,y+=8);
-  pA->print(String((long)pEnemy[1])+" "+String(fDebug[1]));
+  pA->print(pCamera->q[1]);
   pA->setCursor(0,y+=8);
-  pA->print(String((long)pEnemy[2])+" "+String(fDebug[2]));
+  pA->print(pPlayer->q[0]);
+  pA->setCursor(0,y+=8);
+  pA->print(pPlayer->q[1]);
+  pA->setCursor(0,y+=8);
+  pA->print(pCamera->c[0]);
+  pA->setCursor(0,y+=8);
+  pA->print(pCamera->c[1]);
 #endif
 }
 
