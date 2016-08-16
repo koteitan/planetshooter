@@ -14,6 +14,12 @@ Game::Game(Arduboy *_pA, bool *_kp){
   for(int l=0;l<BGSTARLAYERS;l++){
     for(int s=0;s<BGSTARS;s++) pBgstar[s][l] = new BGStar();
   }
+  tEnemyHp  = 0;
+  iEnemyHp  = 0;
+  debris    = 0;
+  iDebris   = 0;
+  iAnime    = 0;
+  iAnimeMax = 2;
 }
 void Game::reset(void){
   for(int l=0;l<BGSTARLAYERS;l++){
@@ -32,7 +38,7 @@ void Game::reset(void){
   score=0;
   pA->clear();
   pA->display();
-  Bullet::iAnime=0;
+  iAnime=0;
 }
 void Game::drawScore(void){
   pA->setCursor(0,SY-8-3);
@@ -53,15 +59,20 @@ void Game::loop(void){
   for(int i=0;i<BULLETS;i++) pBullet[i]->draw(this);
   Debri::drawAll(this);
   pShot->draw(this);
-  pPlayer->drawHp(this);
-  for(int i=0;i<ENEMIES;i++) pEnemy[i]->drawHp(this);
   for(int l=0;l<BGSTARLAYERS;l++){
     for(int s=0;s<BGSTARS;s++){
       pBgstar[s][l]->draw(this,l);
     }
   }
+  pPlayer->drawHp(this);
+  if(tEnemyHp>0){
+    pA->drawLine(0,SY-3,pEnemy[iEnemyHp]->h,SY-3,WHITE);
+    iEnemyHp--;
+  }
 //  drawDebug();// debug
   pA->display();
+  // inclement anime
+  iAnime=(iAnime+1) % iAnimeMax;
 }
 void drawDebug(Arduboy *pA){
 #if 1

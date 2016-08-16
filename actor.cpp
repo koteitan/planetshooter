@@ -61,26 +61,26 @@ void Shot::move(Game *pG){
         pE->h--;
         char newdebris;
         if(pE->h>0){
-          Enemy::ht=60;
-          Enemy::hi=e;
+          pG->tEnemyHp=60;
+          pG->iEnemyHp=e;
           newdebris=1;
         }else{
           //enemy dies
           pG->score+=100;
           pG->hiscore=max(pG->score,pG->hiscore);
           pE->respawn(pG);
-          Enemy::ht=0;
+          pG->tEnemyHp=0;
           newdebris=10;
         }
-        for(int n=0;n<newdebris||Debri::debris<DEBRIS;n++){
-          Debri *pD=pG->pDebri[Debri::i];
+        for(int n=0;n<newdebris||pG->debris<DEBRIS;n++){
+          Debri *pD=pG->pDebri[pG->iDebris];
           pD->t=20;
           pD->v[0]=d[0]*0.05f+((float)random(0,200)/100.0f-1.0f)*0.02f;
           pD->v[1]=d[1]*0.05f+((float)random(0,200)/100.0f-1.0f)*0.02f;
           pD->q[0]=pE->q[0];
           pD->q[1]=pE->q[1];
-          Debri::i=(Debri::i+1)%DEBRIS;
-          Debri::debris++;
+          pG->iDebris=(pG->iDebris+1)%DEBRIS;
+          pG->debris++;
         }
       }
     }
@@ -97,10 +97,6 @@ void Shot::move(Game *pG){
   }
 }
 //Enemy ----------------------------------------
-void Enemy::init(void){
-  Enemy::hi=0;
-  Enemy::ht=0;
-}
 bool Enemy::move(Game *pG){
   bool isPlayerAlive=true;
   float vstep  = 0.002f;
@@ -189,12 +185,6 @@ void Enemy::draw(Game *pG){
     pG->pA->drawCircle((int)(dx*WX2SX)+SX/2,(int)(dy*WY2SY)+SY/2,ENEMY_SIZE_DR,WHITE);
   }
 }
-void Enemy::drawHp(Game *pG){
-  if(Enemy::ht>0){
-    pG->pA->drawLine(0,SY-3,pG->pEnemy[Enemy::hi]->h,SY-3,WHITE);
-    Enemy::ht--;
-  }
-}
 void Enemy::respawn(Game *pG){
   h=32;
   Player *pP=pG->pPlayer;
@@ -222,10 +212,6 @@ void Enemy::respawn(Game *pG){
   dd=(char)random(0,4);
 }
 //Bullet ----------------------------------
-void Bullet::init(void){
-  Bullet::iAnime    = 0;
-  Bullet::iAnimeMax = 2;
-}
 bool Bullet::move(Game *pG){
   bool isPlayerAlive = true;
   Player *pP=pG->pPlayer;
@@ -246,20 +232,15 @@ bool Bullet::move(Game *pG){
   }
   return isPlayerAlive;
 }
-char Bullet::iAnime=0;
-char Bullet::iAnimeMax=2;
 void Bullet::draw(Game *pG){
   if(b){
     float cs=SX2WX*BULLET_SIZE_DR;
     float dx=q[0]-pG->pPlayer->q[0];
     float dy=q[1]-pG->pPlayer->q[1];
     if(abs(dx) < WX/2-cs && abs(dy) < WY/2-cs){
-      pG->pA->drawCircle((int)(dx*WX2SX)+SX/2,(int)(dy*WY2SY)+SY/2,BULLET_SIZE_DR-Bullet::iAnime,WHITE);
+      pG->pA->drawCircle((int)(dx*WX2SX)+SX/2,(int)(dy*WY2SY)+SY/2,BULLET_SIZE_DR-pG->iAnime,WHITE);
     }
   }
-}
-void Bullet::incAnime(void){
-  Bullet::iAnime=(Bullet::iAnime+1) % Bullet::iAnimeMax;
 }
 // Back Ground Stars-----------------------
 void BGStar::draw(Game *pG, int l){
@@ -285,8 +266,8 @@ void Shot::draw(Game *pG){
 char Debri::i=0;
 char Debri::debris=0;
 void Debri::moveAll(Game *pG){
-  for(int n=0;n<Debri::debris;n++){
-    int d=(Debri::i+n)%DEBRIS;
+  for(int n=0;n<pG->debris;n++){
+    int d=(pG->iDebris+n)%DEBRIS;
     pG->pDebri[d]->move(pG);
   };
 }

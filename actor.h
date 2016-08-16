@@ -30,10 +30,8 @@ class Enemy{
   char h;        // hitpoint
   static char hi; // hitpoint displayed enemy index
   static char ht; // hitpoint displayed time
-  void init(void);
   bool move(Game *pG);      // move with player p / returns if player is alive
   void draw(Game *pG);      // draw
-  void drawHp(Game *pG);    // draw HP
   void respawn(Game *pG);   // respawn
 };
 
@@ -43,12 +41,9 @@ class Bullet{ // bullets of enemies
   bool b;     // is shot
   float q[2]; // position
   float v[2]; // velosity
-  void init(void);
+  static void init(void);
   bool move(Game *pG); // move with player p / returns if player is alive
   void draw(Game *pG); // draw
-  void incAnime(void); // inclement anime frame
-  static char iAnime;
-  static char iAnimeMax;
 };
 // shot of player--------------------------
 class Shot{

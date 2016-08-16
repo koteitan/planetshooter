@@ -32,8 +32,14 @@ class Game{
   Shot   *pShot                         ;
   Debri  *pDebri [DEBRIS ]              ;
   BGStar *pBgstar[BGSTARS][BGSTARLAYERS];
+  int tEnemyHp;
+  int iEnemyHp;
   int bullets;
-
+  int debris;
+  int iDebris;
+  int iAnime;
+  int iAnimeMax;
+ 
   Game(Arduboy *_pA, bool *_kp);
   void reset    (void);
   void drawScore(void);
