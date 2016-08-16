@@ -70,7 +70,7 @@ void Shot::move(Game *pG){
           pG->hiscore=max(pG->score,pG->hiscore);
           pE->respawn(pG);
           pG->tEnemyHp=0;
-          newdebris=10;
+          newdebris=3;
         }
         for(int n=0;n<newdebris||pG->debris<DEBRIS;n++){
           Debri *pD=pG->pDebri[pG->iDebris];
@@ -92,8 +92,18 @@ void Shot::move(Game *pG){
       d[0]*=idr;
       d[1]*=idr;
       dp = random(0,3);
-      t  = 3;
+      t  = 1;
     }
+  }
+}
+void Shot::draw(Game *pG){
+  if(t){
+    int dx=(int)(d[0]*(float)SX/6);
+    int dy=(int)(d[1]*(float)SY/6);
+    pG->pA->drawLine(SX/2+dx*(dp+0),
+                     SY/2+dy*(dp+0),
+                     SX/2+dx*(dp+1),
+                     SY/2+dy*(dp+1),WHITE);
   }
 }
 //Enemy ----------------------------------------
@@ -110,14 +120,14 @@ bool Enemy::move(Game *pG){
   if(abs(dx)>WX*1.1||abs(dy)>WY*1.1){
     respawn(pG);
   }else{
-    // collision to player ----------
+    // collision to player 
     if(dr<SX2WX*(PLAYER_SIZE_CR+ENEMY_SIZE_CR)){
       pG->pPlayer->h-=10;
       if(pG->pPlayer->h<=0){
         isPlayerAlive = false;
       }
     }
-    // close to player ----------
+    // close to player 
     float esidr = idr*vstep;
     if(dt--<0){
         dt=random(0,120);
@@ -137,7 +147,7 @@ bool Enemy::move(Game *pG){
         v[1]+=dx*esidr;
       break;
     }
-    // keep apart from other enemies ------------
+    // keep apart from other enemies 
     for(int e2=0;e2<ENEMIES;e2++){
       Enemy *pE2 = pG->pEnemy[e2];
       if(pE2!=this){
@@ -155,7 +165,7 @@ bool Enemy::move(Game *pG){
     q[0]+=v[0];
     q[1]+=v[1];
   }
-  //fire -----------------
+  //fire 
   #define FIREFRAMES (32)
   #define BULLETSPEED (0.04f)
   float br=random(0,FIREFRAMES);
@@ -177,16 +187,8 @@ bool Enemy::move(Game *pG){
   }
   return isPlayerAlive;
 }
-void Enemy::draw(Game *pG){
-  float cs=SX2WX*ENEMY_SIZE_DR;
-  float dx=q[0]-pG->pPlayer->q[0];
-  float dy=q[1]-pG->pPlayer->q[1];
-  if(abs(dx) < WX/2-cs && abs(dy) < WY/2-cs){
-    pG->pA->drawCircle((int)(dx*WX2SX)+SX/2,(int)(dy*WY2SY)+SY/2,ENEMY_SIZE_DR,WHITE);
-  }
-}
 void Enemy::respawn(Game *pG){
-  h=32;
+  h=5;
   Player *pP=pG->pPlayer;
   int r=random(0,4);
   switch(r){
@@ -209,6 +211,14 @@ void Enemy::respawn(Game *pG){
   }
   dt=(char)random(0,120);
   dd=(char)random(0,4);
+}
+void Enemy::draw(Game *pG){
+  float cs=SX2WX*ENEMY_SIZE_DR;
+  float dx=q[0]-pG->pPlayer->q[0];
+  float dy=q[1]-pG->pPlayer->q[1];
+  if(abs(dx) < WX/2-cs && abs(dy) < WY/2-cs){
+    pG->pA->drawCircle((int)(dx*WX2SX)+SX/2,(int)(dy*WY2SY)+SY/2,ENEMY_SIZE_DR,WHITE);
+  }
 }
 //Bullet ----------------------------------
 bool Bullet::move(Game *pG){
@@ -249,17 +259,6 @@ void BGStar::draw(Game *pG, int l){
       int iy = sy / 8;
       int by = sy % 8;
       pG->pA->getBuffer()[iy*WIDTH + sx] |= 1<<by;
-}
-//shot --------------------------
-void Shot::draw(Game *pG){
-  if(t){
-    int dx=(int)(d[0]*(float)SX/6);
-    int dy=(int)(d[1]*(float)SY/6);
-    pG->pA->drawLine(SX/2+dx*(dp+0),
-                     SY/2+dy*(dp+0),
-                     SX/2+dx*(dp+1),
-                     SY/2+dy*(dp+1),WHITE);
-  }
 }
 //Debri ---------------------------
 void Debri::init(Game *pG){

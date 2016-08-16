@@ -42,8 +42,18 @@ void Game::reset(void){
   iAnime=0;
 }
 void Game::drawScore(void){
-  pA->setCursor(0,SY-8-3);
-  pA->print("SCORE:"+ralign(score,5)+" HI:"+ralign(hiscore,5));
+  char str [6];
+  pA->setCursor(0*6,SY-8-3);
+  pA->print("SCORE:");
+  pA->setCursor(6*6,SY-8-3);
+  sprintf(str, "% 5d",score);
+  pA->print(str);
+
+  pA->setCursor(12*6,SY-8-3);
+  pA->print("HI:");
+  pA->setCursor(15*6,SY-8-3);
+  sprintf(str, "% 5d",score);
+  pA->print(str);
 }
 void Game::loop(void){
   // move ------------
@@ -55,7 +65,6 @@ void Game::loop(void){
   Debri::moveAll(this);
   // draw ------------
   pA->clear();
-  drawScore();
   pPlayer->draw(this);
   for(int i=0;i<ENEMIES;i++) pEnemy [i]->draw(this);
   for(int i=0;i<BULLETS;i++) pBullet[i]->draw(this);
@@ -69,8 +78,10 @@ void Game::loop(void){
   pPlayer->drawHp(this);
   drawEnemyHp();
 //  drawDebug();// debug
+  drawScore();
   pA->display();
-  // inclement anime
+
+  // inclement anime --------
   iAnime=(iAnime+1) % iAnimeMax;
   if(!isAlive){
     reset();

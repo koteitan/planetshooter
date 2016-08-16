@@ -8,18 +8,18 @@ class Bullet;
 class Shot;
 class BackGroundStar;
 class Debri;
-#if 0
+#if 1
 #define BGSTARS      (10) // number of background stars
 #define BGSTARLAYERS ( 3) // number of background star layers
 #define ENEMIES      ( 6) // number of enemies
 #define BULLETS      (10) // max number of bullets 
 #define DEBRIS       (20) // max number of debris
-#else
-#define BGSTARS      ( 1) // number of background stars
-#define BGSTARLAYERS ( 3) // number of background star layers
-#define ENEMIES      ( 3) // number of enemies
-#define BULLETS      ( 1) // max number of bullets 
-#define DEBRIS       (10) // max number of debris
+#else // low cost
+#define BGSTARS      ( 2) // number of background stars
+#define BGSTARLAYERS ( 2) // number of background star layers
+#define ENEMIES      ( 2) // number of enemies
+#define BULLETS      ( 2) // max number of bullets 
+#define DEBRIS       ( 2) // max number of debris
 #endif
 #define PLAYER_SIZE_DR (5.0f) // displayed radius of player [px]
 #define PLAYER_SIZE_CR (2.0f) // collision radius of player [px]

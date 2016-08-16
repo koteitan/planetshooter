@@ -40,6 +40,3 @@
 #define KEY_B  4
 #define KEY_A  5
 #define KEYS   6
-
-/* return String converted from integer i with length n */
-String ralign(int i, int n); 
