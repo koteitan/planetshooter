@@ -64,17 +64,6 @@ Tested Environment
 
 
 ---------------------------
- ご注意
----------------------------
-- このゲームのスケッチを転送した後に次のゲームのスケッチをアップロードできなくなるかもしれません。もし下記のようなエラーメッセージがでたら、下記の修復方法で修復し、次のスケッチを転送してください。
-  - エラーメッセージ:
-    - "Couldn't find a Board on the selected port. Check that you have the correct port selected.  If it is correct, try pressing the board's reset button after initiating the upload."
-  - 修復方法(PORTS-リセット法):
-    (1) ArduinoIDE > ファイル > 環境設定> 設定 > より詳細な情報を表示する: 書き込み = チェック有にします。
-    (2) Arduboy のUSBケーブルの横のリセットボタンを押したままにする。(爪楊枝の先を爪切りで1mm切ったものを使うと便利です)
-    (3) Arduino IDE の書き込みボタンを押します。
-    (4) Arduino IDE に "PORTS {} / {} => {}" というメッセージが連続して出力される状態の時に Arduboy のリセットボタンを離します。 
----------------------------
 ロードの仕方
 ---------------------------
 - Arduino IDE をインストールしてください:
@@ -92,14 +81,16 @@ Tested Environment
 - Arduboy を USB ケーブル で PC につないで下さい。
 - 「マイコンボードに書き込む」ボタンを押して下さい。
 ---------------------------
-テスト済み環境
+ ご注意
 ---------------------------
-- Arduboy 1.0
-- Arduboy Library:
-  - https://github.com/Arduboy/Arduboy/
-  - revision: 3c409fefb
-  - branch  : master
-- Arduino IDE 1.6.9
+- このゲームのスケッチを転送した後に次のゲームのスケッチをアップロードできなくなるかもしれません。もし下記のようなエラーメッセージがでたら、下記の修復方法で修復し、次のスケッチを転送してください。
+  - エラーメッセージ:
+    - "Couldn't find a Board on the selected port. Check that you have the correct port selected.  If it is correct, try pressing the board's reset button after initiating the upload."
+  - 修復方法(PORTS-リセット法):
+    (1) ArduinoIDE > ファイル > 環境設定> 設定 > より詳細な情報を表示する: 書き込み = チェック有にします。
+    (2) Arduboy のUSBケーブルの横のリセットボタンを押したままにする。(爪楊枝の先を爪切りで1mm切ったものを使うと便利です)
+    (3) Arduino IDE の書き込みボタンを押します。
+    (4) Arduino IDE に "PORTS {} / {} => {}" というメッセージが連続して出力される状態の時に Arduboy のリセットボタンを離します。 
 ---------------------------
 遊び方  
 ---------------------------
@@ -113,4 +104,13 @@ Tested Environment
   - B    ... ショット
   - A    ... なし
 --------------------------------
+---------------------------
+テスト済み環境
+---------------------------
+- Arduboy 1.0
+- Arduboy Library:
+  - https://github.com/Arduboy/Arduboy/
+  - revision: 3c409fefb
+  - branch  : master
+- Arduino IDE 1.6.9
 EOF
