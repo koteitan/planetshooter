@@ -27,14 +27,17 @@ void Game::reset(void){
       pBgstar[s][l]->q[1] = (float)random(0,SY-1)/(float)SY*WY*BGSTARLAYERS+WY0;
     }
   }
-  pPlayer->q[0] = 0.0f;
-  pPlayer->q[1] = 0.0f;
+  pPlayer->q[0] =  0.0f;
+  pPlayer->q[1] =  0.0f;
+  pPlayer->v[0] = +10e-20;
+  pPlayer->v[1] =  0.0f;
+  pPlayer->d[0] = +1.0f;
+  pPlayer->d[1] =  0.0f;
+  
   pCamera->q[0] = pPlayer->q[0];
   pCamera->q[1] = pPlayer->q[1];
-  pPlayer->v[0] = 0.0f;
-  pPlayer->v[1] = 0.0f;
-  pCamera->v[0] = 0.0f;
-  pCamera->v[1] = 0.0f;
+  pCamera->v[0] =  0.0f;
+  pCamera->v[1] =  0.0f;
   pPlayer->h = 127;
   for(int i=0;i<ENEMIES;i++) {pEnemy [i]->respawn(this);}
   for(int i=0;i<BULLETS;i++) pBullet[i]->b=false;
@@ -81,7 +84,7 @@ void Game::loop(void){
 
   // draw ------------
   pA->clear();
-//  pCamera->draw(this);
+//  pCamera->draw(this); // for debug
   if(state==eGAME_STT_PLAY) pPlayer->draw(this);
   for(int i=0;i<ENEMIES;i++) pEnemy [i]->draw(this);
   for(int i=0;i<BULLETS;i++) pBullet[i]->draw(this);
@@ -127,11 +130,18 @@ void Game::drawEnemyHp(){
   }
 }
 void Game::drawDebug(void){
+#if 1
+  int i=0;
+  char str[20];
+#endif
+//pA->setCursor(0,i*8);pA->print(getMargin());i++;
 #if 0
-  int y=0;
-  char str[10];
-  pA->setCursor(0,y+=8);
-  pA->print(bullets);
+  pA->setCursor(0,i*8);pA->print(fDbg[i]);i++;
+  pA->setCursor(0,i*8);pA->print(fDbg[i]);i++;
+  pA->setCursor(0,i*8);pA->print(fDbg[i]);i++;
+  pA->setCursor(0,i*8);pA->print(fDbg[i]);i++;
+  pA->setCursor(0,i*8);pA->print(pPlayer->d[0]);i++;
+  pA->setCursor(0,i*8);pA->print(pPlayer->d[1]);i++;
 #endif
 }
 

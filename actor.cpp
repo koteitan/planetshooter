@@ -7,19 +7,9 @@ void Camera::move(Game *pG){
   float rate   = 0.75f;
   float vmax   = 1.0f;
   float vstep  = 0.08f;
-  float dx = pG->pPlayer->v[0];
-  float dy = pG->pPlayer->v[1];
-  float r2 = dx*dx+dy*dy;
-  if(r2>10e-30){
-    r2=1.0f/sqrt(r2);
-    dx=dx*r2;
-    dy=dy*r2;
-  }else{
-    dx=0.0f;
-    dy=0.0f;
-  }
-  c[0] = pG->pPlayer->q[0] + dx*rate*2.0f;
-  c[1] = pG->pPlayer->q[1] + dy*rate*1.0f + 4.0f*SX2WX;
+  Player *pP = pG->pPlayer;
+  c[0] = pP->q[0] + pP->d[0]*rate*2.0f;
+  c[1] = pP->q[1] + pP->d[1]*rate*1.0f + 4.0f*SX2WX; // for score charactor
   v[0]=max(-vmax,min(vmax,(c[0]-q[0])*vstep));
   v[1]=max(-vmax,min(vmax,(c[1]-q[1])*vstep));
   q[0]+=v[0];
@@ -50,15 +40,17 @@ void Player::draw(Game *pG){
   int cy = pG->pCamera->q[1]*WY2SY;
   int px = pG->pPlayer->q[0]*WX2SX;
   int py = pG->pPlayer->q[1]*WY2SY;
-  float ivr=sqrt(v[0]*v[0]+v[1]*v[1]);
-  float dx,dy;
-  if(ivr>10e-30){
-    ivr = 1.0f/ivr;
-    dx=v[0]*ivr;
-    dy=v[1]*ivr;
+  float _vr=sqrt(v[0]*v[0]+v[1]*v[1]);
+  float ivr = 1.0f/_vr;
+  float dx = v[0]*ivr;
+  float dy = v[1]*ivr;
+  if(_vr>10e-20){
+    d[0]=dx;
+    d[1]=dy;
+    vr  =_vr;
   }else{
-    dx =+1;
-    dy = 0;
+    dx=d[0];
+    dy=d[1];
   }
   float cosm = cos((180.0f-60.0f)/180.0f*PI);
   float cosp = cos((180.0f+60.0f)/180.0f*PI);
@@ -123,12 +115,9 @@ void Shot::move(Game *pG){
     }
   }else{
     if(pG->keypressed[KEY_A] && pG->state!=eGAME_STT_DIED){
-      d[0]=pP->v[0];
-      d[1]=pP->v[1];
-      float idr=1.0f/sqrt(d[0]*d[0]+d[1]*d[1]);
-      d[0]*=idr;
-      d[1]*=idr;
-      dp = random(0,3);
+      d[0]=pP->d[0];
+      d[1]=pP->d[1];
+      dp = random(0,4);
       t  = 1;
     }
   }
@@ -139,12 +128,12 @@ void Shot::draw(Game *pG){
     int py = pG->pPlayer->q[1]*WY2SY;
     int cx = pG->pCamera->q[0]*WX2SX;
     int cy = pG->pCamera->q[1]*WY2SY;
-    int dx=(int)(d[0]*(float)SX/6);
-    int dy=(int)(d[1]*(float)SY/6);
-    pG->pA->drawLine(SX/2+dx*(dp+1)+(px-cx),
-                     SY/2+dy*(dp+1)+(py-cy),
-                     SX/2+dx*(dp+2)+(px-cx),
-                     SY/2+dy*(dp+2)+(py-cy),WHITE);
+    int dx=(int)(d[0]*(float)WX2SX*1);
+    int dy=(int)(d[1]*(float)WY2SY*1);
+    pG->pA->drawLine(SX/2+dx*(dp+0)+(px-cx),
+                     SY/2+dy*(dp+0)+(py-cy),
+                     SX/2+dx*(dp+1)+(px-cx),
+                     SY/2+dy*(dp+1)+(py-cy),WHITE);
   }
 }
 //Enemy ----------------------------------------
