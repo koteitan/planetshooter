@@ -1,7 +1,13 @@
 #include <Arduboy.h>
 #include "common.h"
 #include "game.h"
-#include "actor.h"
+#include "camera.h"
+#include "player.h"
+#include "shot.h"
+#include "enemy.h"
+#include "bullet.h"
+#include "debri.h"
+#include "bgstar.h"
 // library version is below:
 // git co https://github.com/Arduboy/Arduboy 3c409fefb
 

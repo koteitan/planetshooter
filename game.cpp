@@ -2,6 +2,7 @@
 #include <Arduboy.h>
 #include "common.h"
 #include "game.h"
+//--------------------------------------
 Game::Game(Arduboy *_pA, bool *_kp){
   state = eGAME_STT_PLAY;
   keypressed = _kp;
@@ -20,6 +21,7 @@ Game::Game(Arduboy *_pA, bool *_kp){
   iAnimeMax = 2;
   reset();
 }
+//--------------------------------------
 void Game::reset(void){
   for(int l=0;l<BGSTARLAYERS;l++){
     for(int s=0;s<BGSTARS;s++){
@@ -68,9 +70,10 @@ void Game::drawScore(void){
   sprintf(str, "% 5d",hiscore);
   pA->print(str);
 }
+//--------------------------------------
 void Game::loop(void){
 
-  // move ------------
+  // move 
   pCamera->move(this);
   if(state==eGAME_STT_PLAY) pPlayer->move(this);
   bool isAlive = true;
@@ -82,7 +85,7 @@ void Game::loop(void){
   // score
   hiscore = max(score, hiscore);
 
-  // draw ------------
+  // draw 
   pA->clear();
 //  pCamera->draw(this); // for debug
   if(state==eGAME_STT_PLAY) pPlayer->draw(this);
@@ -101,7 +104,7 @@ void Game::loop(void){
   drawScore();
   pA->display();
 
-  // inclement anime --------
+  // inclement anime 
   iAnime=(iAnime+1) % iAnimeMax;
   if(!isAlive){
     state=eGAME_STT_DIED;
@@ -117,18 +120,22 @@ void Game::loop(void){
       debris++;
     }
   }
+
+  // state
   if(state==eGAME_STT_DIED){
     if(t_died--<=0){
       reset();
     }
   }
 }
+//--------------------------------------
 void Game::drawEnemyHp(){
   if(tEnemyHp>0){
     pA->drawLine(0,SY-3,pEnemy[iEnemyHp]->h,SY-3,WHITE);
     tEnemyHp--;
   }
 }
+//--------------------------------------
 void Game::drawDebug(void){
 #if 1
   int i=0;
@@ -144,7 +151,4 @@ void Game::drawDebug(void){
   pA->setCursor(0,i*8);pA->print(pPlayer->d[1]);i++;
 #endif
 }
-
-
-
-
+//--------------------------------------

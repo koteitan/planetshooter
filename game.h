@@ -1,7 +1,13 @@
 #pragma once
 #include <Arduboy.h>
 #include "common.h"
-#include "actor.h"
+#include "camera.h"
+#include "player.h"
+#include "shot.h"
+#include "enemy.h"
+#include "bullet.h"
+#include "debri.h"
+#include "bgstar.h"
 class Camera;
 class Player;
 class Enemy;
