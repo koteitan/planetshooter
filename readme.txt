@@ -12,7 +12,7 @@
 ---------------------------
  ご注意
 ---------------------------
-- このゲームのスケッチを転送した後に次のゲームのスケッチをアップロードできなくなるかもしれません。もし下記のようなエラーメッセージがでたら、下記の修復方法で修復して、下記の方法で次のスケッチを転送してください。
+- このゲームのスケッチを転送した後に次のゲームのスケッチをアップロードできなくなるかもしれません。もし下記のようなエラーメッセージがでたら、下記の修復方法で修復し、次のスケッチを転送してください。
   - エラーメッセージ:
     - "Couldn't find a Board on the selected port. Check that you have the correct port selected.  If it is correct, try pressing the board's reset button after initiating the upload."
   - 修復方法(PORTS-リセット法):
@@ -22,16 +22,24 @@
     (4) Arduino IDE に "PORTS {} / {} => {}" というメッセージが連続して出力される状態の時に Arduboy のリセットボタンを離します。 
 
 ---------------------------
+Tested Environment
+---------------------------
+- Arduboy 1.0
+- Arduboy Library:
+  - https://github.com/Arduboy/Arduboy/
+  - revision: 3c409fefb
+  - branch  : master
+- Arduino IDE 1.6.9
+---------------------------
 Description  
 ---------------------------
-- This is shooter game.
-- Shoot the circle enemies.
+- This is a shooter game !
+- Shoot circle enemies.
 - The line at bottom is your hit point.
 - The line at above that is enemy's hit point.
 - Key:
   - UDLR ... move
   - B    ... shot
   - A    ... none
-
 --------------------------------
 EOF

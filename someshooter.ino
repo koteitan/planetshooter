@@ -3,7 +3,7 @@
 #include "game.h"
 #include "actor.h"
 // library version is below:
-// git co https://github.com/Arduboy/pA->git 3c409fefb
+// git co https://github.com/Arduboy/Arduboy 3c409fefb
 
 
 int curkeys = 0;
