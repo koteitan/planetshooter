@@ -1,3 +1,35 @@
+----------------------
+ someshooter
+----------------------
+- 英語
+  - How to load
+  - Attention
+  - How to Play
+  - Tested Environment
+  
+- 日本語
+  - ロードの仕方
+  - ご注意
+  - 遊び方
+  - テスト済み環境
+
+---------------------------
+How to load
+---------------------------
+- Install Arduino IDE
+  - https://www.arduino.cc/en/Main/Software
+- Set the preferences below of Arduino IDE:
+  - File > Preferences > Settings Tab > Additional Boards Manager URLs = 
+    https://arduboy.github.io/board-support/package_arduboy_index.json
+  - Tool > Board       = Arduboy
+  - Tool > Serial Port = the port of Arduboy Leonardo
+- Get the sketch
+  - git clone https://github.com/koteitan/someshooter.git
+    or
+  - https://github.com/koteitan/someshooter/archive/master.zip
+- change the directory name to "someshooter/".
+- Connect USB cable between your pc and Arduboy.
+- Press upload button.
 ---------------------------
  Attention
 ---------------------------
@@ -10,6 +42,28 @@
     (3) Push upload button of Arduino IDE.
     (4) Release the reset button of Arduboy when a message "PORTS {} / {} => {}" is output continuously.
 ---------------------------
+How to Play
+---------------------------
+- This is a shooter game !
+- Shoot circle enemies.
+- The line at bottom is your hit point.
+- The line at above that is enemy's hit point.
+- Key:
+  - UDLR ... move
+  - B    ... shot
+  - A    ... none
+---------------------------
+Tested Environment
+---------------------------
+- Arduboy 1.0
+- Arduboy Library:
+  - https://github.com/Arduboy/Arduboy/
+  - revision: 3c409fefb
+  - branch  : master
+- Arduino IDE 1.6.9
+
+
+---------------------------
  ご注意
 ---------------------------
 - このゲームのスケッチを転送した後に次のゲームのスケッチをアップロードできなくなるかもしれません。もし下記のようなエラーメッセージがでたら、下記の修復方法で修復し、次のスケッチを転送してください。
@@ -20,9 +74,25 @@
     (2) Arduboy のUSBケーブルの横のリセットボタンを押したままにする。(爪楊枝の先を爪切りで1mm切ったものを使うと便利です)
     (3) Arduino IDE の書き込みボタンを押します。
     (4) Arduino IDE に "PORTS {} / {} => {}" というメッセージが連続して出力される状態の時に Arduboy のリセットボタンを離します。 
-
 ---------------------------
-Tested Environment
+ロードの仕方
+---------------------------
+- Arduino IDE をインストールしてください:
+  - https://www.arduino.cc/en/Main/Software
+- 下記のArduino IDE の設定をして下さい:
+  - ファイル > 環境設定 > 追加のボードマネージャのURL = 
+    https://arduboy.github.io/board-support/package_arduboy_index.json
+  - ツール > ボード         = Arduboy
+  - ツール > シリアルポート = Arduboy Leonardo があるポート
+- スケッチをダウンロードしてください:
+  - git clone https://github.com/koteitan/someshooter.git
+    または
+  - https://github.com/koteitan/someshooter/archive/master.zip
+- ディレクトリ名を "someshooter/" に変えて下さい。
+- Arduboy を USB ケーブル で PC につないで下さい。
+- 「マイコンボードに書き込む」ボタンを押して下さい。
+---------------------------
+テスト済み環境
 ---------------------------
 - Arduboy 1.0
 - Arduboy Library:
@@ -31,15 +101,16 @@ Tested Environment
   - branch  : master
 - Arduino IDE 1.6.9
 ---------------------------
-Description  
+遊び方  
 ---------------------------
-- This is a shooter game !
-- Shoot circle enemies.
-- The line at bottom is your hit point.
-- The line at above that is enemy's hit point.
-- Key:
-  - UDLR ... move
-  - B    ... shot
-  - A    ... none
+- シューティングゲームです。!
+- 丸い敵を撃って下さい。
+- 下の線はあなたのヒットポイントです。
+- その上の線は敵のヒットポイントです。
+- 特に終わりはありません。
+- キー:
+  - UDLR ... 移動
+  - B    ... ショット
+  - A    ... なし
 --------------------------------
 EOF
