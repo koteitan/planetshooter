@@ -1,7 +1,7 @@
 ----------------------
- someshooter
+ planetshooter
 ----------------------
-- 英語
+- English
   - How to load
   - Attention
   - How to Play
@@ -24,10 +24,10 @@ How to load
   - Tool > Board       = Arduboy
   - Tool > Serial Port = the port of Arduboy Leonardo
 - Get the sketch
-  - git clone https://github.com/koteitan/someshooter.git
+  - git clone https://github.com/koteitan/planetshooter.git
     or
-  - https://github.com/koteitan/someshooter/archive/master.zip
-- change the directory name to "someshooter/".
+  - https://github.com/koteitan/planetshooter/archive/master.zip
+- change the directory name to "planetshooter/".
 - Connect USB cable between your pc and Arduboy.
 - Press upload button.
 ---------------------------
@@ -60,8 +60,7 @@ Tested Environment
   - https://github.com/Arduboy/Arduboy/
   - revision: 3c409fefb
   - branch  : master
-- Arduino IDE 1.6.9
-
+- Arduino IDE 1.6.10
 
 ---------------------------
 ロードの仕方
@@ -74,10 +73,10 @@ Tested Environment
   - ツール > ボード         = Arduboy
   - ツール > シリアルポート = Arduboy Leonardo があるポート
 - スケッチをダウンロードしてください:
-  - git clone https://github.com/koteitan/someshooter.git
+  - git clone https://github.com/koteitan/planetshooter.git
     または
-  - https://github.com/koteitan/someshooter/archive/master.zip
-- ディレクトリ名を "someshooter/" に変えて下さい。
+  - https://github.com/koteitan/planetshooter/archive/master.zip
+- ディレクトリ名を "planetshooter/" に変えて下さい。
 - Arduboy を USB ケーブル で PC につないで下さい。
 - 「マイコンボードに書き込む」ボタンを押して下さい。
 ---------------------------
@@ -112,5 +111,5 @@ Tested Environment
   - https://github.com/Arduboy/Arduboy/
   - revision: 3c409fefb
   - branch  : master
-- Arduino IDE 1.6.9
+- Arduino IDE 1.6.10
 EOF
