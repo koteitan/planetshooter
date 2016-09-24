@@ -58,7 +58,6 @@ void Game::reset(void){
   animestate = eANIME_STT_PLAYING;
   pGE->init();
   pA->clear();
-  pA->display();
 }
 void Game::drawScore(void){
   char str [6];
@@ -144,7 +143,7 @@ void Game::drawAll(){
   drawEnemyHp();
   drawDebug();// debug
   drawScore();
-  pA->display();
+  if(animestate != eANIME_STT_PLAYING) pA->display();
 }
 //--------------------------------------
 void Game::drawEnemyHp(){
