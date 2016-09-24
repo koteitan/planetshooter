@@ -20,7 +20,7 @@ bool Enemy::move(Game *pG){
   float dr   = sqrt(dx*dx+dy*dy);
   float idr  = 1.0f/dr;
   // collision to player 
-  if(dr<SX2WX*(PLAYER_SIZE_CR+ENEMY_SIZE_CR)){
+  if(pG->pPlayer->h>0 && dr<SX2WX*(PLAYER_SIZE_CR+ENEMY_SIZE_CR)){
     pG->pPlayer->h-=10;
     pG->geDamageTimeNow = pG->geDamageTimeMax;
     if(pG->pPlayer->h<=0){

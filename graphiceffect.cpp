@@ -75,4 +75,15 @@ void GraphicEffect::glitch(int _b0, int _b1){
     }
   }  
 }
+void GraphicEffect::devide(int d){
+  for(int y=0;y<8;y++){
+    for(int x=0;x<128;x++){
+      if((x-64)%d==0){
+        SPI.transfer(vram[y*128+(x-64)/d+64]);
+      }else{
+        SPI.transfer(0x00);
+      }
+    }
+  }
+}
 

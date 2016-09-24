@@ -62,17 +62,23 @@ void Game::reset(void){
   switch(geType){
     case 0:
       geSeqMax  = 4;
-      geTimeMax = 4; 
+      geTimeMax = 6; 
       geSeqStep = 1; 
     break;
     case 1:
       geSeqMax  = 64;
+      geTimeMax =  0; 
+      geSeqStep =  1; 
+    break;
+    case 2:
+      geSeqMax  = 16;
       geTimeMax =  0; 
       geSeqStep =  2; 
     break;
     default:
     break;
   }
+  geDamageTimeNow=0;
   pA->clear();
 }
 void Game::drawScore(void){
@@ -101,6 +107,9 @@ void Game::loop(void){
       break;
       case 1:
       pGE->lightning(geSeqMax-geSeqNow-1);
+      break;
+      case 2:
+      pGE->devide(geSeqMax-geSeqNow-1);
       break;
       default:
       break;

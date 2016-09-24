@@ -21,7 +21,7 @@ bool Bullet::move(Game *pG){
     if(abs(dx)>WX||abs(dy)>WY){
       b=false;
     }
-    if(dr<SX2WX*(BULLET_SIZE_CR+PLAYER_SIZE_CR)){
+    if(pP->h>0 && dr<SX2WX*(BULLET_SIZE_CR+PLAYER_SIZE_CR)){
       pP->h-=5;
       pG->geDamageTimeNow = pG->geDamageTimeMax;
       b=false;

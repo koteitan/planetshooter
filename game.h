@@ -84,7 +84,7 @@ class Game{
   int geTimeMax = 0;
   int geSeqStep = 0;
   int geType    = 0;
-  int geTypeMax = 2;
+  int geTypeMax = 3;
   int geDamageTimeNow = 0;
   int geDamageTimeMax = 4;
   Game(Arduboy *_pA, bool *_kp);

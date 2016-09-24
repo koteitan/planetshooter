@@ -11,4 +11,5 @@ public:
   void mosaic(int);
   void lightning(int);
   void glitch(int,int);
+  void devide(int);
 };
