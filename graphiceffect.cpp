@@ -52,4 +52,27 @@ void GraphicEffect::lightning(int seq){
     SPI.transfer(vram[(lybyte+1)*128+x]);
   }
 }
+/* glitch effect
+   len bytes from offset are injected last byte
+*/
+void GraphicEffect::glitch(int _b0, int _b1){
+  uint8_t *p=vram;
+  int b0,b1;
+  if(b1>b0){
+    b1=_b0;
+    b0=_b1;
+    p+=b1-b0;
+  }else{
+    b0=_b0;
+    b1=_b1;
+  }
+  // normal
+  for(int i=0;i<1024;i++){
+    if(b0<i&&i<b1){
+      SPI.transfer(0xFF);
+    }else{
+      SPI.transfer(*p++);
+    }
+  }  
+}
 

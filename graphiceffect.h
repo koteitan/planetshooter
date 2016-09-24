@@ -10,4 +10,5 @@ public:
 	~GraphicEffect(void);
   void mosaic(int);
   void lightning(int);
+  void glitch(int,int);
 };
