@@ -2,9 +2,12 @@
 #include <Arduboy.h>
 #include "common.h"
 #include "game.h"
+
 //--------------------------------------
 Game::Game(Arduboy *_pA, bool *_kp){
   state = eGAME_STT_PLAY;
+  animestate = eANIME_STT_IDLE;
+  pGE = new GraphicEffect(pA);
   keypressed = _kp;
   pA = _pA;
   hiscore=0;
@@ -52,7 +55,8 @@ void Game::reset(void){
   score = 0;
   t_died = 30;
   state = eGAME_STT_PLAY;
-
+  animestate = eANIME_STT_PLAYING;
+  pGE->init();
   pA->clear();
   pA->display();
 }
@@ -73,6 +77,17 @@ void Game::drawScore(void){
 //--------------------------------------
 void Game::loop(void){
 
+  if(animestate==eANIME_STT_PLAYING){
+    //do animation
+    drawAll();
+    bool isFinished = pGE->mosaic();
+    if(isFinished){
+      animestate=eANIME_STT_IDLE;
+      pGE->init();
+    }
+    return;
+  }
+
   // move 
   pCamera->move(this);
   if(state==eGAME_STT_PLAY) pPlayer->move(this);
@@ -86,24 +101,8 @@ void Game::loop(void){
   hiscore = max(score, hiscore);
 
   // draw 
-  pA->clear();
-//  pCamera->draw(this); // for debug
-  if(state==eGAME_STT_PLAY) pPlayer->draw(this);
-  for(int i=0;i<ENEMIES;i++) pEnemy [i]->draw(this);
-  for(int i=0;i<BULLETS;i++) pBullet[i]->draw(this);
-  Debri::drawAll(this);
-  pShot->draw(this);
-  for(int l=0;l<BGSTARLAYERS;l++){
-    for(int s=0;s<BGSTARS;s++){
-      pBgstar[s][l]->draw(this,l);
-    }
-  }
-  pPlayer->drawHp(this);
-  drawEnemyHp();
-  drawDebug();// debug
-  drawScore();
-  pA->display();
-
+  drawAll();
+  
   // inclement anime 
   iAnime=(iAnime+1) % iAnimeMax;
   if(!isAlive){
@@ -127,6 +126,25 @@ void Game::loop(void){
       reset();
     }
   }
+}
+void Game::drawAll(){
+  pA->clear();
+//  pCamera->draw(this); // for debug
+  if(state==eGAME_STT_PLAY) pPlayer->draw(this);
+  for(int i=0;i<ENEMIES;i++) pEnemy [i]->draw(this);
+  for(int i=0;i<BULLETS;i++) pBullet[i]->draw(this);
+  Debri::drawAll(this);
+  pShot->draw(this);
+  for(int l=0;l<BGSTARLAYERS;l++){
+    for(int s=0;s<BGSTARS;s++){
+      pBgstar[s][l]->draw(this,l);
+    }
+  }
+  pPlayer->drawHp(this);
+  drawEnemyHp();
+  drawDebug();// debug
+  drawScore();
+  pA->display();
 }
 //--------------------------------------
 void Game::drawEnemyHp(){

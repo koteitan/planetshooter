@@ -8,6 +8,8 @@
 #include "bullet.h"
 #include "debri.h"
 #include "bgstar.h"
+#include "graphiceffect.h"
+
 class Camera;
 class Player;
 class Enemy;
@@ -20,6 +22,11 @@ typedef enum{
   eGAME_STT_DIED = 1,
   eGAME_STTS     = 2
 }eGAME_STT;
+typedef enum{
+  eANIME_STT_IDLE    = 0,
+  eANIME_STT_PLAYING = 1,
+  eANIME_STTS        = 2
+}eANIME_STT;
 #if 1 // release
 #define BGSTARS      (10) // number of background stars
 #define BGSTARLAYERS ( 3) // number of background star layers
@@ -69,9 +76,12 @@ class Game{
   int iAnimeMax;
   int t_died;
   eGAME_STT state;
+  eANIME_STT animestate;
+  GraphicEffect *pGE;
   Game(Arduboy *_pA, bool *_kp);
   void reset    (void);
   void drawScore(void);
+  void drawAll  (void);
   void loop     (void);
   void drawDebug(void);
   void drawEnemyHp(void);

@@ -8,6 +8,7 @@
 #include "bullet.h"
 #include "debri.h"
 #include "bgstar.h"
+
 // library version is below:
 // git co https://github.com/Arduboy/Arduboy 3c409fefb
 
@@ -19,12 +20,13 @@ Arduboy *pA = new Arduboy();
 
 int frame_rate  = 60;  // frames/sec
 Game *pGame;
-
+GraphicEffect *pGE = new GraphicEffect(pA);
 void setup(){
   pA->beginNoLogo();
   pA->initRandomSeed();
   pGame = new Game(pA, keypressed);
   pA->setFrameRate(frame_rate);
+  pGE->init();
 }
 
 long msnow=0;
