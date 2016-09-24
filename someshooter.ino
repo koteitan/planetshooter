@@ -26,7 +26,6 @@ void setup(){
   pA->initRandomSeed();
   pGame = new Game(pA, keypressed);
   pA->setFrameRate(frame_rate);
-  pGE->init();
 }
 
 long msnow=0;

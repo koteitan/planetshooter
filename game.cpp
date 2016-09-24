@@ -6,8 +6,6 @@
 //--------------------------------------
 Game::Game(Arduboy *_pA, bool *_kp){
   state = eGAME_STT_PLAY;
-  animestate = eANIME_STT_IDLE;
-  pGE = new GraphicEffect(pA);
   keypressed = _kp;
   pA = _pA;
   hiscore=0;
@@ -22,6 +20,10 @@ Game::Game(Arduboy *_pA, bool *_kp){
   }
   iAnime    = 0;
   iAnimeMax = 2;
+  geState = eGE_STT_IDLE;
+  pGE = new GraphicEffect(pA);
+  geTimeNow = 0;
+  geSeq = 0;
   reset();
 }
 //--------------------------------------
@@ -55,8 +57,9 @@ void Game::reset(void){
   score = 0;
   t_died = 30;
   state = eGAME_STT_PLAY;
-  animestate = eANIME_STT_PLAYING;
-  pGE->init();
+  geState = eGE_STT_PLAYING;  
+  geTimeNow = 0;
+  geSeq = 0;
   pA->clear();
 }
 void Game::drawScore(void){
@@ -76,13 +79,18 @@ void Game::drawScore(void){
 //--------------------------------------
 void Game::loop(void){
 
-  if(animestate==eANIME_STT_PLAYING){
-    //do animation
+  if(geState==eGE_STT_PLAYING){
+    //do graphic effect
     drawAll();
-    bool isFinished = pGE->mosaic();
-    if(isFinished){
-      animestate=eANIME_STT_IDLE;
-      pGE->init();
+    pGE->mosaic(3-geSeq);
+    if(geTimeNow>geTimeMax){
+      geTimeNow=0;
+      geSeq++;
+    }else{
+      geTimeNow++;
+    }
+    if(geSeq>4){
+      geState=eGE_STT_IDLE;
     }
     return;
   }
@@ -143,7 +151,7 @@ void Game::drawAll(){
   drawEnemyHp();
   drawDebug();// debug
   drawScore();
-  if(animestate != eANIME_STT_PLAYING) pA->display();
+  if(geState != eGE_STT_PLAYING) pA->display();
 }
 //--------------------------------------
 void Game::drawEnemyHp(){

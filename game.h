@@ -23,16 +23,16 @@ typedef enum{
   eGAME_STTS     = 2
 }eGAME_STT;
 typedef enum{
-  eANIME_STT_IDLE    = 0,
-  eANIME_STT_PLAYING = 1,
-  eANIME_STTS        = 2
-}eANIME_STT;
+  eGE_STT_IDLE    = 0,
+  eGE_STT_PLAYING = 1,
+  eGE_STTS        = 2
+}eGE_STT;
 #if 1 // release
 #define BGSTARS      (10) // number of background stars
 #define BGSTARLAYERS ( 3) // number of background star layers
 #define ENEMIES      ( 6) // number of enemies
-#define BULLETS      (10) // max number of bullets 
-#define DEBRIS       (10) // max number of debris
+#define BULLETS      ( 7) // max number of bullets 
+#define DEBRIS       ( 7) // max number of debris
 #endif
 #if 0 //debug
 #define BGSTARS      (10) // number of background stars
@@ -76,8 +76,11 @@ class Game{
   int iAnimeMax;
   int t_died;
   eGAME_STT state;
-  eANIME_STT animestate;
+  eGE_STT geState;
   GraphicEffect *pGE;
+  int geSeq     = 0;
+  int geTimeNow = 0;
+  int geTimeMax = 2;
   Game(Arduboy *_pA, bool *_kp);
   void reset    (void);
   void drawScore(void);
