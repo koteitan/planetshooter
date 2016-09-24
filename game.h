@@ -28,11 +28,11 @@ typedef enum{
   eGE_STTS        = 2
 }eGE_STT;
 #if 1 // release
-#define BGSTARS      (10) // number of background stars
+#define BGSTARS      ( 5) // number of background stars
 #define BGSTARLAYERS ( 3) // number of background star layers
-#define ENEMIES      ( 6) // number of enemies
-#define BULLETS      ( 7) // max number of bullets 
-#define DEBRIS       ( 7) // max number of debris
+#define ENEMIES      ( 5) // number of enemies
+#define BULLETS      ( 5) // max number of bullets 
+#define DEBRIS       ( 5) // max number of debris
 #endif
 #if 0 //debug
 #define BGSTARS      (10) // number of background stars
