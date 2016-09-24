@@ -22,6 +22,7 @@ bool Enemy::move(Game *pG){
   // collision to player 
   if(dr<SX2WX*(PLAYER_SIZE_CR+ENEMY_SIZE_CR)){
     pG->pPlayer->h-=10;
+    pG->geDamageTimeNow = pG->geDamageTimeMax;
     if(pG->pPlayer->h<=0){
       isPlayerAlive = false;
     }

@@ -23,6 +23,7 @@ bool Bullet::move(Game *pG){
     }
     if(dr<SX2WX*(BULLET_SIZE_CR+PLAYER_SIZE_CR)){
       pP->h-=5;
+      pG->geDamageTimeNow = pG->geDamageTimeMax;
       b=false;
       if(pP->h<=0) isPlayerAlive = false;
     }

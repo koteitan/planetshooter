@@ -53,12 +53,12 @@ void Game::reset(void){
   bullets   = 0;
 
   score = 0;
-  t_died = 30;
+  t_died = 60;
   state = eGAME_STT_PLAY;
   geState = eGE_STT_PLAYING;  
   geTimeNow = 0;
   geSeqNow  = 0;
-  geType = random(0,2);
+  geType = random(0,geTypeMax);
   switch(geType){
     case 0:
       geSeqMax  = 4;
@@ -173,7 +173,14 @@ void Game::drawAll(){
   drawEnemyHp();
   drawDebug();// debug
   drawScore();
-  if(geState != eGE_STT_PLAYING) pA->display();
+  if(geState != eGE_STT_PLAYING){
+    if(geDamageTimeNow>0){
+      pGE->glitch(random(0,1024),random(0,1024));
+      geDamageTimeNow--;
+    }else{
+      pA->display();
+    }
+  }
 }
 //--------------------------------------
 void Game::drawEnemyHp(){

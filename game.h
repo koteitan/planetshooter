@@ -30,9 +30,9 @@ typedef enum{
 #if 1 // release
 #define BGSTARS      ( 5) // number of background stars
 #define BGSTARLAYERS ( 3) // number of background star layers
-#define ENEMIES      ( 5) // number of enemies
-#define BULLETS      ( 5) // max number of bullets 
-#define DEBRIS       ( 5) // max number of debris
+#define ENEMIES      (10) // number of enemies
+#define BULLETS      (10) // max number of bullets 
+#define DEBRIS       ( 4) // max number of debris
 #endif
 #if 0 //debug
 #define BGSTARS      (10) // number of background stars
@@ -85,6 +85,8 @@ class Game{
   int geSeqStep = 0;
   int geType    = 0;
   int geTypeMax = 2;
+  int geDamageTimeNow = 0;
+  int geDamageTimeMax = 4;
   Game(Arduboy *_pA, bool *_kp);
   void reset    (void);
   void drawScore(void);
