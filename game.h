@@ -18,9 +18,12 @@ class Shot;
 class BackGroundStar;
 class Debri;
 typedef enum{
-  eGAME_STT_PLAY = 0,
-  eGAME_STT_DIED = 1,
-  eGAME_STTS     = 2
+  eGAME_STT_TITLE_IN  = 0,
+  eGAME_STT_TITLE     = 1,
+  eGAME_STT_TITLE_OUT = 2,
+  eGAME_STT_PLAY      = 3,
+  eGAME_STT_DIED      = 4,
+  eGAME_STTS          = 5
 }eGAME_STT;
 typedef enum{
   eGE_STT_IDLE    = 0,
@@ -28,11 +31,11 @@ typedef enum{
   eGE_STTS        = 2
 }eGE_STT;
 #if 1 // release
-#define BGSTARS      ( 5) // number of background stars
+#define BGSTARS      ( 7) // number of background stars
 #define BGSTARLAYERS ( 3) // number of background star layers
 #define ENEMIES      (10) // number of enemies
 #define BULLETS      (10) // max number of bullets 
-#define DEBRIS       ( 4) // max number of debris
+#define DEBRIS       ( 7) // max number of debris
 #endif
 #if 0 //debug
 #define BGSTARS      (10) // number of background stars
@@ -94,5 +97,7 @@ class Game{
   void loop     (void);
   void drawDebug(void);
   void drawEnemyHp(void);
+  void drawTitle(void);
+  bool incGE(void);
   float fDbg[10];
 };

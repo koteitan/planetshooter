@@ -5,7 +5,7 @@
 
 //--------------------------------------
 Game::Game(Arduboy *_pA, bool *_kp){
-  state = eGAME_STT_PLAY;
+  state = eGAME_STT_TITLE_IN;
   keypressed = _kp;
   pA = _pA;
   hiscore=0;
@@ -20,9 +20,14 @@ Game::Game(Arduboy *_pA, bool *_kp){
   }
   iAnime    = 0;
   iAnimeMax = 2;
-  geState = eGE_STT_IDLE;
+  geState = eGE_STT_PLAYING;
+  geSeqNow  =  0;
+  geTimeNow =  0; 
+  geType    =  1; //lightning
+  geSeqMax  = 63;
+  geTimeMax =  0; 
+  geSeqStep =  1; 
   pGE = new GraphicEffect(pA);
-  reset();
 }
 //--------------------------------------
 void Game::reset(void){
@@ -71,9 +76,9 @@ void Game::reset(void){
       geSeqStep =  1; 
     break;
     case 2:
-      geSeqMax  = 16;
+      geSeqMax  = 32;
       geTimeMax =  0; 
-      geSeqStep =  2; 
+      geSeqStep =  1; 
     break;
     default:
     break;
@@ -96,34 +101,76 @@ void Game::drawScore(void){
   pA->print(str);
 }
 //--------------------------------------
+void Game::drawTitle(void){
+  pA->setCursor(64-14*6/2, 8);
+  pA->print(F("PLANET SHOOTER"));
+  pA->setCursor(64-11*6/2, 24);
+  pA->print(F("HIT ANY KEY"));
+  pA->setCursor(64-17*6/2, 56);
+  pA->print(F("Program: koteitan"));
+}
+bool Game::incGE(void){
+  if(geTimeNow>=geTimeMax){
+    geTimeNow=0;
+    geSeqNow += geSeqStep;
+  }else{
+    geTimeNow++;
+  }
+  return geSeqNow>geSeqMax;
+}
 void Game::loop(void){
-
-  if(geState==eGE_STT_PLAYING){
-    //do graphic effect
-    drawAll();
-    switch(geType){
-      case 0:
-      pGE->mosaic(geSeqMax-geSeqNow-1);
-      break;
-      case 1:
+  bool b=false;
+  switch(state){
+    //----------------------------------
+    case eGAME_STT_TITLE_IN:
+      pA->clear();
+      drawTitle();
       pGE->lightning(geSeqMax-geSeqNow-1);
-      break;
-      case 2:
-      pGE->devide(geSeqMax-geSeqNow-1);
-      break;
-      default:
-      break;
-    }
-    if(geTimeNow>geTimeMax){
-      geTimeNow=0;
-      geSeqNow += geSeqStep;
-    }else{
-      geTimeNow++;
-    }
-    if(geSeqNow>geSeqMax){
-      geState=eGE_STT_IDLE;
-    }
+      if(incGE()) state=eGAME_STT_TITLE;
     return;
+    //----------------------------------
+    case eGAME_STT_TITLE:
+      drawTitle();
+      pA->display();
+      for(int k=0;k<KEYS;k++) b=b||keypressed[k];
+      if(b){
+        state=eGAME_STT_TITLE_OUT;
+        geSeqNow=0;
+        geTimeNow=0;
+      }
+    return;
+    //----------------------------------
+    case eGAME_STT_TITLE_OUT:
+      drawTitle();
+      pGE->lightning(geSeqNow);
+      if(incGE()){
+        state  =eGAME_STT_PLAY;
+        geState=eGE_STT_PLAYING;
+        reset();
+      }
+    return;
+    //----------------------------------
+    case eGAME_STT_PLAY:
+    case eGAME_STT_DIED:
+      if(geState==eGE_STT_PLAYING){
+        //do graphic effect
+        drawAll();
+        switch(geType){
+          case 0:
+          pGE->mosaic(geSeqMax-geSeqNow-1);
+          break;
+          case 1:
+          pGE->lightning(geSeqMax-geSeqNow-1);
+          break;
+          case 2:
+          pGE->devide(geSeqMax-geSeqNow-1);
+          break;
+          default:
+          break;
+        }
+        if(incGE()) geState=eGE_STT_IDLE;
+      return;
+    }//switch(state)
   }
 
   // move 

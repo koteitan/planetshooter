@@ -6,7 +6,7 @@ class Game;
 // bullet of enemies ----------------------
 class Bullet{ // bullets of enemies
   public:
-  bool b;     // is shot
+  bool b=false;     // is shot
   float q[2]; // position
   float v[2]; // velosity
   static void init(void);
