@@ -9,4 +9,5 @@ public:
 	GraphicEffect(Arduboy *_pArduboy);
 	~GraphicEffect(void);
   void mosaic(int);
+  void lightning(int);
 };

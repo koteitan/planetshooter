@@ -78,9 +78,13 @@ class Game{
   eGAME_STT state;
   eGE_STT geState;
   GraphicEffect *pGE;
-  int geSeq     = 0;
+  int geSeqNow  = 0;
+  int geSeqMax  = 0;
   int geTimeNow = 0;
-  int geTimeMax = 2;
+  int geTimeMax = 0;
+  int geSeqStep = 0;
+  int geType    = 0;
+  int geTypeMax = 2;
   Game(Arduboy *_pA, bool *_kp);
   void reset    (void);
   void drawScore(void);

@@ -22,8 +22,6 @@ Game::Game(Arduboy *_pA, bool *_kp){
   iAnimeMax = 2;
   geState = eGE_STT_IDLE;
   pGE = new GraphicEffect(pA);
-  geTimeNow = 0;
-  geSeq = 0;
   reset();
 }
 //--------------------------------------
@@ -59,7 +57,22 @@ void Game::reset(void){
   state = eGAME_STT_PLAY;
   geState = eGE_STT_PLAYING;  
   geTimeNow = 0;
-  geSeq = 0;
+  geSeqNow  = 0;
+  geType = random(0,2);
+  switch(geType){
+    case 0:
+      geSeqMax  = 4;
+      geTimeMax = 4; 
+      geSeqStep = 1; 
+    break;
+    case 1:
+      geSeqMax  = 64;
+      geTimeMax =  0; 
+      geSeqStep =  2; 
+    break;
+    default:
+    break;
+  }
   pA->clear();
 }
 void Game::drawScore(void){
@@ -82,14 +95,23 @@ void Game::loop(void){
   if(geState==eGE_STT_PLAYING){
     //do graphic effect
     drawAll();
-    pGE->mosaic(3-geSeq);
+    switch(geType){
+      case 0:
+      pGE->mosaic(geSeqMax-geSeqNow-1);
+      break;
+      case 1:
+      pGE->lightning(geSeqMax-geSeqNow-1);
+      break;
+      default:
+      break;
+    }
     if(geTimeNow>geTimeMax){
       geTimeNow=0;
-      geSeq++;
+      geSeqNow += geSeqStep;
     }else{
       geTimeNow++;
     }
-    if(geSeq>4){
+    if(geSeqNow>geSeqMax){
       geState=eGE_STT_IDLE;
     }
     return;
